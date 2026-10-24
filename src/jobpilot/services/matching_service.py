@@ -39,6 +39,17 @@ def _get_job_skills(job_id: str) -> list[str]:
 
 def match_candidate_to_job(candidate_id: str, job_id: str) -> dict:
     """Compare candidate skills with job requirements and return a match summary."""
+    conn = get_connection()
+    try:
+        candidate = conn.execute("SELECT id FROM candidates WHERE id = ?", (candidate_id,)).fetchone()
+        if not candidate:
+            raise ValueError(f"Candidate '{candidate_id}' not found")
+        job = conn.execute("SELECT id FROM jobs WHERE id = ?", (job_id,)).fetchone()
+        if not job:
+            raise ValueError(f"Job '{job_id}' not found")
+    finally:
+        conn.close()
+
     candidate_skills = set(_get_candidate_skills(candidate_id))
     job_skills = set(_get_job_skills(job_id))
 
@@ -60,6 +71,8 @@ def match_candidate_to_job(candidate_id: str, job_id: str) -> dict:
         ] + recommendations[:2]
 
     return {
+        "candidate_id": candidate_id,
+        "job_id": job_id,
         "match_score": max(0, min(match_score, 100)),
         "matching_skills": matching_skills,
         "missing_skills": missing_skills,

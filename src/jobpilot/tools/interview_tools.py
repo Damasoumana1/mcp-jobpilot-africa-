@@ -1,13 +1,11 @@
 from __future__ import annotations
 
-from fastmcp import FastMCP
-
+from jobpilot.mcp_app import mcp
+from jobpilot.models.interview import ChecklistItem
 from jobpilot.services.interview_service import generate_interview_questions, get_application_checklist
 
-mcp = FastMCP("jobpilot")
 
-
-@mcp.tool()
+@mcp.tool(name="generate_interview_questions")
 def generate_interview_questions_tool(
     candidate_id: str,
     job_id: str,
@@ -23,7 +21,8 @@ def generate_interview_questions_tool(
     )
 
 
-@mcp.tool()
-def get_application_checklist_tool(candidate_id: str, job_id: str) -> list[dict]:
+@mcp.tool(name="get_application_checklist")
+def get_application_checklist_tool(candidate_id: str, job_id: str) -> list[ChecklistItem]:
     """Return a personalized checklist for applying and preparing for an interview."""
-    return get_application_checklist(candidate_id=candidate_id, job_id=job_id)
+    raw_checklist = get_application_checklist(candidate_id=candidate_id, job_id=job_id)
+    return [ChecklistItem.model_validate(item) for item in raw_checklist]

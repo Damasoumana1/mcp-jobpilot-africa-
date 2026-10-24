@@ -5,10 +5,14 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 DATA_DIR = BASE_DIR / "data"
-DATABASE_PATH = Path(os.getenv("DATABASE_PATH", str(DATA_DIR / "demo.db")))
+def get_database_path() -> Path:
+    return Path(os.getenv("DATABASE_PATH", str(DATA_DIR / "demo.db")))
+
+
+DATABASE_PATH = get_database_path()
 DEBUG = os.getenv("DEBUG", "true").lower() == "true"
 APP_NAME = os.getenv("APP_NAME", "mcp-jobpilot-africa")
 
 
 def ensure_data_dir() -> None:
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    get_database_path().parent.mkdir(parents=True, exist_ok=True)

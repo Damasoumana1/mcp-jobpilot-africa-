@@ -3,6 +3,19 @@ from __future__ import annotations
 from jobpilot.database.connection import get_connection
 
 
+def _get_skills_for_job(conn, job_id: str) -> list[str]:
+    rows = conn.execute(
+        """
+        SELECT s.name
+        FROM job_skills js
+        JOIN skills s ON s.id = js.skill_id
+        WHERE js.job_id = ?
+        """,
+        (job_id,),
+    ).fetchall()
+    return [row["name"] for row in rows]
+
+
 def search_jobs(
     keywords: list[str] | None = None,
     country: str | None = None,
@@ -39,7 +52,12 @@ def search_jobs(
                 params.append(f"%{keyword}%")
 
         rows = conn.execute(query, params).fetchall()
-        return [dict(row) for row in rows]
+        results = []
+        for row in rows:
+            data = dict(row)
+            data["skills"] = _get_skills_for_job(conn, data["id"])
+            results.append(data)
+        return results
     finally:
         conn.close()
 
@@ -49,6 +67,10 @@ def get_job(job_id: str) -> dict | None:
     conn = get_connection()
     try:
         row = conn.execute("SELECT * FROM jobs WHERE id = ?", (job_id,)).fetchone()
-        return dict(row) if row else None
+        if not row:
+            return None
+        data = dict(row)
+        data["skills"] = _get_skills_for_job(conn, job_id)
+        return data
     finally:
         conn.close()

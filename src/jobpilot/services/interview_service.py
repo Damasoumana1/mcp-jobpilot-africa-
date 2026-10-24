@@ -8,7 +8,11 @@ def generate_interview_questions(candidate_id: str, job_id: str, question_type: 
     conn = get_connection()
     try:
         candidate = conn.execute("SELECT * FROM candidates WHERE id = ?", (candidate_id,)).fetchone()
+        if not candidate:
+            raise ValueError(f"Candidate '{candidate_id}' not found")
         job = conn.execute("SELECT * FROM jobs WHERE id = ?", (job_id,)).fetchone()
+        if not job:
+            raise ValueError(f"Job '{job_id}' not found")
 
         skill_rows = conn.execute(
             """
@@ -25,13 +29,10 @@ def generate_interview_questions(candidate_id: str, job_id: str, question_type: 
             f"Can you explain your experience with {skill}?" for skill in skills[:4]
         ]
 
-        if job:
-            base_questions.append(f"Why are you interested in working at {job['company']}?")
-            base_questions.append(f"How would you approach a project involving {job['title']} in a real-world setting?")
-
-        if candidate:
-            base_questions.append(f"Tell us about your background in {candidate['education'] or 'your studies'}.")
-            base_questions.append("What is one project you are most proud of and why?")
+        base_questions.append(f"Why are you interested in working at {job['company']}?")
+        base_questions.append(f"How would you approach a project involving {job['title']} in a real-world setting?")
+        base_questions.append(f"Tell us about your background in {candidate['education'] or 'your studies'}.")
+        base_questions.append("What is one project you are most proud of and why?")
 
         base_questions.extend([
             "Describe a time you solved a technical challenge with a clear process.",
@@ -50,7 +51,11 @@ def get_application_checklist(candidate_id: str, job_id: str) -> list[dict]:
     conn = get_connection()
     try:
         job = conn.execute("SELECT * FROM jobs WHERE id = ?", (job_id,)).fetchone()
+        if not job:
+            raise ValueError(f"Job '{job_id}' not found")
         candidate = conn.execute("SELECT * FROM candidates WHERE id = ?", (candidate_id,)).fetchone()
+        if not candidate:
+            raise ValueError(f"Candidate '{candidate_id}' not found")
 
         tasks = [
             {"task": "Prepare a two-minute introduction", "priority": "high", "completed": False},
