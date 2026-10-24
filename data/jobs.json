@@ -10,7 +10,8 @@
     "compensation": "Paid",
     "description": "Build and prototype AI-powered workflows including RAG and document search systems.",
     "application_url": "https://example.com/jobs/1",
-    "closing_date": "2027-03-15"
+    "closing_date": "2027-03-15",
+    "skills": ["Python", "RAG", "LangGraph", "SQL"]
   },
   {
     "id": "JOB-002",
@@ -23,7 +24,8 @@
     "compensation": "Competitive",
     "description": "Design AI workflows, automation pipelines, and agent orchestration using modern Python stacks.",
     "application_url": "https://example.com/jobs/2",
-    "closing_date": "2027-04-01"
+    "closing_date": "2027-04-01",
+    "skills": ["Python", "RAG", "LangGraph", "n8n", "PydanticAI"]
   },
   {
     "id": "JOB-003",
@@ -36,6 +38,7 @@
     "compensation": "Stipend",
     "description": "Build backend APIs with FastAPI and help integrate internal tools and services.",
     "application_url": "https://example.com/jobs/3",
-    "closing_date": "2027-02-20"
+    "closing_date": "2027-02-20",
+    "skills": ["Python", "FastAPI", "SQL", "Communication"]
   }
 ]
