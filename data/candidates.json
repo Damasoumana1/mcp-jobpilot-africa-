@@ -1,0 +1,14 @@
+[
+  {
+    "id": "DAMA-001",
+    "full_name": "Dama Soumana",
+    "country": "Burkina Faso",
+    "city": "Ouagadougou",
+    "email": "dama@example.com",
+    "availability_date": "2027-02-01",
+    "languages": "French, English",
+    "education": "Bachelor in Computer Science",
+    "summary": "AI and backend developer interested in RAG, LangGraph and AI automation workflows.",
+    "skills": ["Python", "FastAPI", "RAG", "LangGraph", "Qdrant", "SQL", "Communication"]
+  }
+]

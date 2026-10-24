@@ -1,0 +1,41 @@
+[
+  {
+    "id": "JOB-001",
+    "title": "AI Intern",
+    "company": "AfrikaLabs",
+    "country": "Burkina Faso",
+    "remote_allowed": true,
+    "employment_type": "internship",
+    "duration_months": 6,
+    "compensation": "Paid",
+    "description": "Build and prototype AI-powered workflows including RAG and document search systems.",
+    "application_url": "https://example.com/jobs/1",
+    "closing_date": "2027-03-15"
+  },
+  {
+    "id": "JOB-002",
+    "title": "AI Automation Engineer",
+    "company": "Trace Digital",
+    "country": "Remote",
+    "remote_allowed": true,
+    "employment_type": "full-time",
+    "duration_months": 12,
+    "compensation": "Competitive",
+    "description": "Design AI workflows, automation pipelines, and agent orchestration using modern Python stacks.",
+    "application_url": "https://example.com/jobs/2",
+    "closing_date": "2027-04-01"
+  },
+  {
+    "id": "JOB-003",
+    "title": "Junior Python Backend Developer",
+    "company": "DataBridge",
+    "country": "Senegal",
+    "remote_allowed": false,
+    "employment_type": "internship",
+    "duration_months": 4,
+    "compensation": "Stipend",
+    "description": "Build backend APIs with FastAPI and help integrate internal tools and services.",
+    "application_url": "https://example.com/jobs/3",
+    "closing_date": "2027-02-20"
+  }
+]
