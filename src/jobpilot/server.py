@@ -44,9 +44,19 @@ def main() -> None:
         default=int(os.getenv("MCP_PORT", "8000")),
         help="Port for network transports",
     )
+    parser.add_argument(
+        "--web",
+        action="store_true",
+        help="Launch the interactive Web Dashboard on http://localhost:8000",
+    )
     args = parser.parse_args()
 
     startup()
+
+    if args.web:
+        from jobpilot.web import run_web_server
+        run_web_server(host=args.host, port=args.port)
+        return
 
     if args.transport == "stdio":
         mcp.run(transport="stdio")

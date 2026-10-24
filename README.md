@@ -1,5 +1,6 @@
 # MCP JobPilot Africa
 
+[![CI](https://github.com/Damasoumana1/mcp-jobpilot-africa-/actions/workflows/ci.yml/badge.svg)](https://github.com/Damasoumana1/mcp-jobpilot-africa-/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python: >=3.10](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/)
 [![FastMCP](https://img.shields.io/badge/MCP-FastMCP_v2-purple.svg)](https://github.com/jlowin/fastmcp)
@@ -74,9 +75,17 @@ python -m jobpilot.server
 python -m jobpilot.server --transport sse --host 127.0.0.1 --port 8000
 ```
 
+#### Interactive Web Dashboard:
+```bash
+python -m jobpilot.server --web
+# Ou directement :
+python -m jobpilot.web
+```
+Ouvrez ensuite votre navigateur sur **http://localhost:8000** pour explorer les offres, tester le matching en direct, suivre vos candidatures et générer vos questions d'entretien.
+
 #### FastMCP Dev Inspector:
 ```bash
-fastmcp dev src/jobpilot/server.py:mcp
+fastmcp dev inspector src/jobpilot/server.py:mcp
 ```
 
 ---

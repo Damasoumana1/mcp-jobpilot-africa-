@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JobPilot Africa - Plateforme IA de Matching & Opportunités Tech</title>
+  <meta name="description" content="Plateforme intelligente de matching pour stages et opportunités tech en Afrique avec analyse des compétences et coaching d'entretien.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+  <!-- Header & Navigation -->
+  <header class="header">
+    <div class="header-container">
+      <a href="#" class="brand">
+        <div class="brand-icon">🚀</div>
+        <div>
+          <div style="display: flex; align-items: center;">
+            <span class="brand-title">JobPilot Africa</span>
+            <span class="brand-tag">MCP AI</span>
+          </div>
+          <div style="font-size: 0.72rem; color: var(--text-dim);">Early-Career Tech Platform</div>
+        </div>
+      </a>
+
+      <nav class="nav-tabs">
+        <button class="nav-tab active" data-tab="jobs-tab">
+          <span>💼</span> Offres Tech
+        </button>
+        <button class="nav-tab" data-tab="matching-tab">
+          <span>🎯</span> Matching IA
+        </button>
+        <button class="nav-tab" data-tab="applications-tab">
+          <span>📋</span> Candidatures
+        </button>
+        <button class="nav-tab" data-tab="interview-tab">
+          <span>🎙️</span> Studio d'Entretien
+        </button>
+        <button class="nav-tab" data-tab="profile-tab">
+          <span>👤</span> Profil
+        </button>
+      </nav>
+
+      <div class="header-status">
+        <span class="pulse-dot"></span>
+        <span>Serveur MCP Connecté</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+
+    <!-- Tab 1: Offres Tech -->
+    <section id="jobs-tab" class="tab-pane active">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Opportunités Tech en Afrique</h1>
+          <p class="page-desc">Stages et emplois débutants propulsés par l'intelligence artificielle et l'analyse de compétences.</p>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="filter-bar">
+        <div class="search-input-wrap">
+          <input type="text" id="search-input" class="input-field" placeholder="Rechercher par mot-clé (Python, RAG, FastAPI...)" />
+        </div>
+        <select id="country-filter" class="select-field">
+          <option value="all">🌍 Tous les pays</option>
+          <option value="Burkina Faso">Burkina Faso</option>
+          <option value="Senegal">Sénégal</option>
+          <option value="Remote">100% Remote</option>
+        </select>
+        <label class="checkbox-wrap">
+          <input type="checkbox" id="remote-filter" />
+          <span>Télétravail autorisé uniquement</span>
+        </label>
+      </div>
+
+      <!-- Jobs Grid -->
+      <div id="jobs-grid" class="cards-grid">
+        <!-- Rendu dynamique via app.js -->
+      </div>
+    </section>
+
+    <!-- Tab 2: Matching IA -->
+    <section id="matching-tab" class="tab-pane">
+      <div class="page-header">
+        <div>
+          <h2 class="page-title">Simulateur de Matching de Compétences</h2>
+          <p class="page-desc">Analysez en temps réel la correspondance entre votre profil et les exigences des recruteurs.</p>
+        </div>
+      </div>
+
+      <div class="match-container">
+        <!-- Controls Column -->
+        <div class="glass-box">
+          <h3 style="font-family: 'Outfit'; font-size: 1.15rem; margin-bottom: 1.25rem;">Sélection du Profil & Offre</h3>
+          
+          <div style="margin-bottom: 1.25rem;">
+            <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem;">Candidat</label>
+            <select id="match-candidate-select" class="select-field" style="width: 100%;"></select>
+          </div>
+
+          <div style="margin-bottom: 1.75rem;">
+            <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.4rem;">Offre d'Emploi</label>
+            <select id="match-job-select" class="select-field" style="width: 100%;"></select>
+          </div>
+
+          <button class="btn btn-accent" style="width: 100%; padding: 0.85rem;" onclick="runMatch()">
+            <span>⚡</span> Recalculer le Matching
+          </button>
+        </div>
+
+        <!-- Results Column -->
+        <div class="glass-box">
+          <div class="score-display">
+            <div id="match-score-value" class="score-circle">75%</div>
+            <h4 style="font-family: 'Outfit'; font-size: 1.25rem; font-weight: 600;">Score de Pertinence IA</h4>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem;">Basé sur la couverture des technologies exigées</p>
+          </div>
+
+          <div class="skills-dual-grid">
+            <div class="match-skill-card matched">
+              <h5 style="color: var(--emerald); font-weight: 600; margin-bottom: 0.75rem; font-size: 0.9rem;">✅ Compétences Acquises</h5>
+              <div id="matched-skills-list" style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
+                <span class="pill pill-remote">Python</span>
+                <span class="pill pill-remote">RAG</span>
+              </div>
+            </div>
+
+            <div class="match-skill-card missing">
+              <h5 style="color: var(--amber); font-weight: 600; margin-bottom: 0.75rem; font-size: 0.9rem;">⚠️ Lacunes Identifiées</h5>
+              <div id="missing-skills-list" style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
+                <span class="pill pill-stipend">SQL</span>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h5 style="font-family: 'Outfit'; font-size: 1rem; margin-bottom: 0.75rem;">💡 Recommandations Personnalisées</h5>
+            <div id="recommendations-list" class="recommendations-list">
+              <!-- Recommandations dynamiques -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab 3: Applications Tracker -->
+    <section id="applications-tab" class="tab-pane">
+      <div class="page-header">
+        <div>
+          <h2 class="page-title">Suivi des Candidatures</h2>
+          <p class="page-desc">Gérez vos démarches auprès des entreprises partenaires avec notes et états en temps réel.</p>
+        </div>
+        <button class="btn btn-primary" onclick="loadApplications()">🔄 Rafraîchir</button>
+      </div>
+
+      <div class="table-wrap">
+        <table class="app-table">
+          <thead>
+            <tr>
+              <th>ID Candidature</th>
+              <th>Candidat</th>
+              <th>Offre</th>
+              <th>Statut</th>
+              <th>Notes & Retours</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="applications-tbody">
+            <!-- Rendu dynamique -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Tab 4: Studio d'Entretien -->
+    <section id="interview-tab" class="tab-pane">
+      <div class="page-header">
+        <div>
+          <h2 class="page-title">Studio de Coaching d'Entretien</h2>
+          <p class="page-desc">Questions techniques et comportementales générées sur mesure, accompagnées de votre plan d'action.</p>
+        </div>
+      </div>
+
+      <div class="filter-bar" style="margin-bottom: 1.5rem;">
+        <select id="interview-candidate-select" class="select-field"></select>
+        <select id="interview-job-select" class="select-field"></select>
+        <button class="btn btn-accent" onclick="generateInterviewQuestions()">🎙️ Générer Questions</button>
+        <button class="btn btn-primary" onclick="generateChecklist()">📋 Générer Checklist</button>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+        <div>
+          <h3 style="font-family: 'Outfit'; font-size: 1.2rem; margin-bottom: 1rem;">Questions Anticipées</h3>
+          <div id="questions-container">
+            <div style="color: var(--text-muted); font-size: 0.9rem; padding: 2rem; background: var(--bg-card); border-radius: var(--radius-md); text-align: center;">
+              Sélectionnez une offre et cliquez sur "Générer Questions" pour afficher la simulation d'entretien.
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h3 style="font-family: 'Outfit'; font-size: 1.2rem; margin-bottom: 1rem;">Plan d'Action & Checklist</h3>
+          <div id="checklist-container">
+            <div style="color: var(--text-muted); font-size: 0.9rem; padding: 2rem; background: var(--bg-card); border-radius: var(--radius-md); text-align: center;">
+              Cliquez sur "Générer Checklist" pour recevoir votre plan de préparation structuré par priorités.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab 5: Profil Candidat -->
+    <section id="profile-tab" class="tab-pane">
+      <div class="page-header">
+        <div>
+          <h2 class="page-title">Profil Candidat</h2>
+          <p class="page-desc">Visualisez les informations et compétences enregistrées dans la base de données locale.</p>
+        </div>
+      </div>
+
+      <div class="glass-box" style="max-width: 800px; margin: 0 auto;">
+        <div style="display: flex; align-items: center; gap: 1.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 1.5rem;">
+          <div style="width: 72px; height: 72px; border-radius: 50%; background: var(--gradient-brand); display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 700; color: #022c22;">
+            DS
+          </div>
+          <div>
+            <h3 id="profile-name" style="font-family: 'Outfit'; font-size: 1.5rem; font-weight: 700;">Dama Soumana</h3>
+            <div style="font-size: 0.85rem; color: var(--cyan);" id="profile-id">DAMA-001</div>
+            <div style="font-size: 0.85rem; color: var(--text-muted);" id="profile-country">Ouagadougou, Burkina Faso</div>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+          <h4 style="font-size: 0.95rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.5rem;">Formation & Disponibilité</h4>
+          <div style="display: flex; gap: 2rem;">
+            <div>
+              <small style="color: var(--text-dim); display: block;">Diplôme</small>
+              <span id="profile-education" style="font-weight: 500;">Bachelor in Computer Science</span>
+            </div>
+            <div>
+              <small style="color: var(--text-dim); display: block;">Disponibilité</small>
+              <span id="profile-availability" style="font-weight: 500;">2027-02-01</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+          <h4 style="font-size: 0.95rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.5rem;">Résumé Professionnel</h4>
+          <p id="profile-bio" style="font-size: 0.9rem; color: #cbd5e1; line-height: 1.6;">
+            AI and backend developer interested in RAG, LangGraph and AI automation workflows.
+          </p>
+        </div>
+
+        <div>
+          <h4 style="font-size: 0.95rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.75rem;">Stack & Compétences Validées</h4>
+          <div id="profile-skills-cloud" style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+            <!-- Compétences injectées via app.js -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
