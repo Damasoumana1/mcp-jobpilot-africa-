@@ -20,6 +20,10 @@ def startup() -> None:
     seed_demo_data()
 
 
+# Ensure database and seed data are initialized when imported by FastMCP or external runners
+startup()
+
+
 def main() -> None:
     """Entrypoint to run the JobPilot Africa MCP server."""
     parser = argparse.ArgumentParser(description="JobPilot Africa MCP Server")
