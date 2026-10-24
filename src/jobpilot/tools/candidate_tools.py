@@ -27,9 +27,13 @@ def register_candidate_tool(
     languages: str | None = None,
     education: str | None = None,
     summary: str | None = None,
-    skills: list[str] | None = None,
+    skills: list[str] | str | None = None,
 ) -> Candidate:
     """Create or update a candidate profile with skills and contact details."""
+    parsed_skills = skills
+    if isinstance(skills, str):
+        parsed_skills = [s.strip() for s in skills.split(",") if s.strip()]
+
     data = upsert_candidate(
         candidate_id=candidate_id,
         full_name=full_name,
@@ -40,7 +44,7 @@ def register_candidate_tool(
         languages=languages,
         education=education,
         summary=summary,
-        skills=skills,
+        skills=parsed_skills,
     )
     return Candidate.model_validate(data)
 
