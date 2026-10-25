@@ -156,7 +156,7 @@ export const MatchingTab: React.FC<MatchingTabProps> = ({
                     {selectedJob.title}
                   </h3>
                   <p className="text-sm text-slate-400">
-                    {selectedJob.company} • {selectedJob.location} {selectedJob.remote && '• (Télétravail)'}
+                    {selectedJob.company} • {selectedJob.location || selectedJob.country || 'Afrique'} {(selectedJob.remote || selectedJob.remote_allowed) ? '• (Télétravail)' : ''}
                   </p>
                 </div>
               </div>

@@ -26,17 +26,24 @@ export const JobsTab: React.FC<JobsTabProps> = ({
   const countries = ['all', 'Sénégal', 'Côte d\'Ivoire', 'Rwanda', 'Kenya', 'Nigeria', 'Cameroun'];
 
   const filteredJobs = jobs.filter((job) => {
+    const title = (job.title || '').toLowerCase();
+    const company = (job.company || '').toLowerCase();
+    const location = (job.location || job.country || '').toLowerCase();
+    const skills = (job.required_skills || job.skills || []).map((s) => s.toLowerCase());
+    const q = searchQuery.toLowerCase();
+
     const matchesSearch =
-      job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      job.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      job.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      job.required_skills.some((s) => s.toLowerCase().includes(searchQuery.toLowerCase()));
+      title.includes(q) ||
+      company.includes(q) ||
+      location.includes(q) ||
+      skills.some((s) => s.includes(q));
 
     const matchesCountry =
       selectedCountry === 'all' ||
-      job.location.toLowerCase().includes(selectedCountry.toLowerCase());
+      location.includes(selectedCountry.toLowerCase());
 
-    const matchesRemote = !onlyRemote || job.remote;
+    const isRemote = job.remote || job.remote_allowed || false;
+    const matchesRemote = !onlyRemote || isRemote;
 
     return matchesSearch && matchesCountry && matchesRemote;
   });
@@ -155,7 +162,7 @@ export const JobsTab: React.FC<JobsTabProps> = ({
                     </div>
 
                     <div className="flex flex-col items-end gap-1.5 shrink-0">
-                      {job.remote ? (
+                      {job.remote || job.remote_allowed ? (
                         <span className="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 flex items-center gap-1">
                           <Globe className="w-3 h-3" /> Remote
                         </span>
@@ -165,19 +172,19 @@ export const JobsTab: React.FC<JobsTabProps> = ({
                         </span>
                       )}
                       <span className="text-xs text-slate-400 flex items-center gap-1">
-                        <MapPin className="w-3 h-3 text-slate-500" /> {job.location}
+                        <MapPin className="w-3 h-3 text-slate-500" /> {job.location || job.country || 'Afrique'}
                       </span>
                     </div>
                   </div>
 
                   {/* Description */}
                   <p className="mt-3 text-xs sm:text-sm text-slate-300 line-clamp-3 leading-relaxed">
-                    {job.description}
+                    {job.description || 'Opportunité tech pour jeunes talents.'}
                   </p>
 
                   {/* Required Skills */}
                   <div className="mt-4 flex flex-wrap gap-1.5">
-                    {job.required_skills.map((skill, i) => (
+                    {(job.required_skills || job.skills || []).map((skill, i) => (
                       <span
                         key={i}
                         className="px-2 py-0.5 rounded-md text-xs font-mono font-medium bg-emerald-500/10 text-emerald-300 border border-emerald-500/20"

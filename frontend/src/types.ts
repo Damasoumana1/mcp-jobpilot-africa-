@@ -2,27 +2,33 @@ export interface Job {
   id: string;
   title: string;
   company: string;
-  location: string;
-  remote: boolean;
-  required_skills: string[];
+  location?: string;
+  country?: string;
+  city?: string;
+  remote?: boolean;
+  remote_allowed?: boolean;
+  required_skills?: string[];
+  skills?: string[];
   nice_to_have?: string[];
-  description: string;
-  status: string;
+  description?: string;
+  status?: string;
   application_url?: string;
 }
 
 export interface Candidate {
   id: string;
   name: string;
+  full_name?: string;
   email: string;
   country: string;
-  desired_role: string;
+  desired_role?: string;
   skills: string[];
-  experience_years: number;
+  experience_years?: number;
   portfolio_url?: string;
   education?: string;
   bio?: string;
-  available: boolean;
+  summary?: string;
+  available?: boolean;
 }
 
 export interface Application {

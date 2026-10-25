@@ -52,22 +52,41 @@ export const App: React.FC = () => {
       // 1. Fetch Jobs
       const resJobs = await fetch('/api/jobs');
       if (resJobs.ok) {
-        const jobsData = await resJobs.json();
-        setJobs(jobsData);
+        const rawJobs = await resJobs.json();
+        const normalizedJobs: Job[] = Array.isArray(rawJobs)
+          ? rawJobs.map((j: any) => ({
+              ...j,
+              location: j.location || (j.city ? `${j.city}, ${j.country}` : j.country) || 'Afrique',
+              remote: j.remote ?? j.remote_allowed ?? false,
+              required_skills: j.required_skills || j.skills || [],
+              nice_to_have: j.nice_to_have || [],
+              description: j.description || '',
+              status: j.status || 'open',
+            }))
+          : [];
+        setJobs(normalizedJobs);
       }
 
       // 2. Fetch Candidate
       const resCand = await fetch('/api/candidates/DAMA-001');
       if (resCand.ok) {
         const candData = await resCand.json();
-        setCandidate(candData);
+        setCandidate({
+          ...candData,
+          name: candData.name || candData.full_name || DEFAULT_CANDIDATE.name,
+          desired_role: candData.desired_role || DEFAULT_CANDIDATE.desired_role,
+          skills: candData.skills || DEFAULT_CANDIDATE.skills,
+          experience_years: candData.experience_years ?? DEFAULT_CANDIDATE.experience_years,
+          bio: candData.bio || candData.summary || DEFAULT_CANDIDATE.bio,
+          available: candData.available ?? DEFAULT_CANDIDATE.available,
+        });
       }
 
       // 3. Fetch Applications
       const resApps = await fetch('/api/applications');
       if (resApps.ok) {
         const appsData = await resApps.json();
-        setApplications(appsData);
+        setApplications(Array.isArray(appsData) ? appsData : []);
       }
     } catch (err) {
       console.warn('API error (using fallback state):', err);
