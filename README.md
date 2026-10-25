@@ -140,6 +140,36 @@ pytest -v
 
 ---
 
+## 💻 Modern Web UI (Vite + React 19 + Tailwind CSS)
+
+To launch the modern frontend application:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Open [http://localhost:5173](http://localhost:5173) in your browser to experience:
+- Interactive tech job explorer with continent-wide filters and remote badges
+- Real-time AI weighted matching score with visual breakdown & skill gaps
+- Application pipeline with status tracking (`saved`, `applied`, `interview`, `offer`, `rejected`)
+- Interview studio with AI question generation and preparation checklists
+- Tailored cover letter & LinkedIn pitch generator with 1-click clipboard copy
+- Floating AI Career Copilot assistant
+
+---
+
+## 🤝 Contributing & Community
+
+We are building **MCP JobPilot Africa** as an open-source movement to bridge early-career tech talent across the African continent with high-impact startups and engineering teams!
+
+- Read our [Contributing Guide](CONTRIBUTING.md) to get started.
+- Check out our [Code of Conduct](CODE_OF_CONDUCT.md).
+- Explore open issues or propose new opportunities using our [Issue Templates](https://github.com/Damasoumana1/mcp-jobpilot-africa-/issues).
+
+---
+
 ## 📄 License
 
-MIT
+Distributed under the [MIT License](LICENSE).

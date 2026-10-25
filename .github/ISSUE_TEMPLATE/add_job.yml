@@ -1,0 +1,40 @@
+name: "💼 Propose / Add a Tech Opportunity"
+description: "Submit a new tech job offer or internship opportunity across Africa"
+title: "[JOB]: "
+labels: ["job-listing", "data"]
+body:
+  - type: input
+    id: company
+    attributes:
+      label: "Company / Startup Name"
+      placeholder: "e.g. Wave, InstaDeep, Paystack, Orange..."
+    validations:
+      required: true
+  - type: input
+    id: role
+    attributes:
+      label: "Job Title"
+      placeholder: "e.g. Junior Backend Engineer (FastAPI/Go)"
+    validations:
+      required: true
+  - type: input
+    id: location
+    attributes:
+      label: "Country & City"
+      placeholder: "e.g. Dakar, Sénégal or Remote"
+    validations:
+      required: true
+  - type: textarea
+    id: requirements
+    attributes:
+      label: "Required Skills & Stack"
+      placeholder: "Python, Docker, SQL, React..."
+    validations:
+      required: true
+  - type: input
+    id: link
+    attributes:
+      label: "Application or Careers URL"
+      placeholder: "https://..."
+    validations:
+      required: false
