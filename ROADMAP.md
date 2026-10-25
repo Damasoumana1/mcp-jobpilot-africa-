@@ -23,9 +23,9 @@ To build the most accessible, AI-powered career accelerator for African early-ca
 ---
 
 ### Milestone 2: Data Expansion & Regional Hubs (v0.2.0 - Current Focus 🚧)
-- [ ] **Job Sourcing Across Africa**:
-  - Add opportunities for Nigeria (Lagos), Kenya (Nairobi), Rwanda (Kigali), Ghana (Accra), and Egypt (Cairo).
-  - Web scrapers / RSS parsers for tech startups (Wave, Paystack, Flutterwave, Andela, Kuda, Chipper Cash).
+- [x] **Job Sourcing Across Africa**:
+  - Added 27 high-impact tech opportunities covering Burkina Faso, Senegal, Côte d'Ivoire, Nigeria (Lagos), Kenya (Nairobi), Rwanda (Kigali), Ghana (Accra), Cameroon (Douala/Yaoundé), Benin (Cotonou), Togo (Lomé), Morocco (Casablanca), Tunisia (Tunis), Egypt (Cairo), and South Africa (Cape Town/Johannesburg).
+  - Top startups & tech champions featured: Wave, Paystack, Flutterwave, Moniepoint, Safaricom (M-Pesa), InstaDeep, Irembo, Zipline, Zeepay, mPharma, Maviance, FedaPay, Gozem, Chari, Fawry, Swvl, Yoco, Takealot, and Turing Africa.
 - [ ] **Resume / CV Parser**:
   - Upload CV (PDF or docx) and extract skills, experience, and education automatically.
 - [ ] **Internationalization (i18n)**:

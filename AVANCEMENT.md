@@ -144,8 +144,9 @@ Le projet est désormais armé pour accueillir une communauté mondiale de contr
 
 ## 🎯 7. Prochaines Étapes Immédiates (Milestone v0.2.0)
 
-1. **Enrichissement des Offres** :
-   - Ajouter des partenariats et scrapers pour les hubs du Nigéria (Paystack, Flutterwave), du Kenya (Safaricom) et du Rwanda.
+1. **Enrichissement Panafricain des Offres (Complété ✅)** :
+   - Base étendue à **27 opportunités tech** réparties sur **14 hubs et pays majeurs** : Burkina Faso, Sénégal, Côte d'Ivoire, Nigéria (Paystack, Flutterwave, Moniepoint), Kenya (Safaricom M-Pesa, Twiga), Rwanda (Irembo, Zipline), Ghana (Zeepay, mPharma), Cameroun (Maviance, Koree), Bénin (FedaPay), Togo (Gozem), Maroc (Chari), Tunisie (InstaDeep), Égypte (Fawry, Swvl), Afrique du Sud (Yoco, Takealot) et Remote International (Turing Africa).
+   - Filtre géographique frontend (`JobsTab.tsx`) rendu 100% dynamique.
 2. **Support Multilingue (i18n)** :
    - Intégrer un sélecteur de langue Français / Anglais dans l'interface React pour toucher les développeurs anglophones.
 3. **Analyseur de CV (PDF Parser)** :

@@ -23,7 +23,16 @@ export const JobsTab: React.FC<JobsTabProps> = ({
   const [selectedCountry, setSelectedCountry] = useState('all');
   const [onlyRemote, setOnlyRemote] = useState(false);
 
-  const countries = ['all', 'Sénégal', 'Côte d\'Ivoire', 'Rwanda', 'Kenya', 'Nigeria', 'Cameroun'];
+  // Extraction dynamique et propre de tous les pays présents dans la base
+  const availableCountries = Array.from(
+    new Set(
+      jobs
+        .map((j) => j.location || j.country)
+        .filter((c): c is string => typeof c === 'string' && c.trim().length > 0 && c.toLowerCase() !== 'remote')
+    )
+  ).sort((a, b) => a.localeCompare(b, 'fr'));
+
+  const countries = ['all', ...availableCountries, 'Remote'];
 
   const filteredJobs = jobs.filter((job) => {
     const title = (job.title || '').toLowerCase();
