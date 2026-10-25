@@ -1,9 +1,13 @@
 # MCP JobPilot Africa
 
 [![CI](https://github.com/Damasoumana1/mcp-jobpilot-africa-/actions/workflows/ci.yml/badge.svg)](https://github.com/Damasoumana1/mcp-jobpilot-africa-/actions/workflows/ci.yml)
+[![GitHub Stars](https://img.shields.io/github/stars/Damasoumana1/mcp-jobpilot-africa-?style=social)](https://github.com/Damasoumana1/mcp-jobpilot-africa-)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python: >=3.10](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/)
 [![FastMCP](https://img.shields.io/badge/MCP-FastMCP_v2-purple.svg)](https://github.com/jlowin/fastmcp)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+
+> 🌟 **If you find this project impactful, please give it a Star on GitHub!** It helps African tech talent gain visibility across the global AI ecosystem.
 
 **MCP JobPilot Africa** is an AI-powered Model Context Protocol (MCP) server designed to match African early-career talent with tech internships and job opportunities. It equips AI agents with tools for discovery, profile matching, gap analysis, application tracking, and interview coaching.
 
