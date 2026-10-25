@@ -166,12 +166,25 @@ Open [http://localhost:5173](http://localhost:5173) in your browser to experienc
 
 ## 🤝 Contributing & Community
 
-We are building **MCP JobPilot Africa** as an open-source movement to bridge early-career tech talent across the African continent with high-impact startups and engineering teams!
+We are building **MCP JobPilot Africa** as an open-source, community-driven ecosystem to accelerate early-career tech talent across the African continent! Contributions of all forms are celebrated and welcomed:
 
-- Read our [Contributing Guide](CONTRIBUTING.md) to get started.
-- Discover our upcoming vision in the [Roadmap](ROADMAP.md).
-- Check out our [Code of Conduct](CODE_OF_CONDUCT.md).
-- Explore open issues or propose new opportunities using our [Issue Templates](https://github.com/Damasoumana1/mcp-jobpilot-africa-/issues).
+- 💼 **Add tech jobs**: Use our [Submit Job Form](https://github.com/Damasoumana1/mcp-jobpilot-africa-/issues/new?template=add_job.yml) to add local and remote opportunities.
+- 🤖 **Build MCP tools**: Extend `src/jobpilot/tools/` with new agentic capabilities (resume parsing, skill verification, mock audio interviews).
+- 🎨 **Enhance the Web UI**: Improve React components, Tailwind styling, charts, or accessibility.
+- 🌍 **Internationalization (i18n)**: Help translate JobPilot Africa into French, Arabic, Swahili, Portuguese, and more.
+- 🐛 **Report issues**: Found a bug or edge case? Open an issue using our [Bug Report Form](https://github.com/Damasoumana1/mcp-jobpilot-africa-/issues/new?template=bug_report.yml).
+
+### 👥 Contributors Hall of Fame
+
+A massive thank you to everyone shaping the future of African tech talent! 🌟
+
+<p align="center">
+  <a href="https://github.com/Damasoumana1/mcp-jobpilot-africa-/graphs/contributors">
+    <img src="https://contrib.rocks/image?repo=Damasoumana1/mcp-jobpilot-africa-" alt="Contributors" />
+  </a>
+</p>
+
+*Check out our [Contributing Guide](CONTRIBUTING.md) and [Code of Conduct](CODE_OF_CONDUCT.md) to make your first commit.*
 
 ---
 

@@ -1,0 +1,51 @@
+name: "🐛 Report a Bug"
+description: "File an actionable bug report to help us improve JobPilot Africa"
+title: "[BUG]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting an issue! Please check existing issues first to avoid duplicates.
+  - type: textarea
+    id: description
+    attributes:
+      label: "Describe the Bug"
+      description: "A clear and concise description of what the bug is."
+      placeholder: "e.g. When calling match_candidate_to_job tool with candidate DAMA-001..."
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: "Steps to Reproduce"
+      description: "How can maintainers or contributors reproduce this behavior?"
+      placeholder: |
+        1. Run `python -m jobpilot.server --web`
+        2. Navigate to '...'
+        3. Click on '...'
+        4. See error
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: "Expected Behavior"
+      description: "What did you expect to happen instead?"
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: "Environment Details"
+      placeholder: "OS: Windows 11 / Ubuntu 22.04, Python 3.11, Node 20, Client: Claude Desktop / Web UI"
+    validations:
+      required: false
+  - type: textarea
+    id: logs
+    attributes:
+      label: "Relevant Logs or Screenshots"
+      description: "Paste terminal output, stack traces, or upload screenshots."
+      render: shell
+    validations:
+      required: false
