@@ -165,6 +165,7 @@ Open [http://localhost:5173](http://localhost:5173) in your browser to experienc
 We are building **MCP JobPilot Africa** as an open-source movement to bridge early-career tech talent across the African continent with high-impact startups and engineering teams!
 
 - Read our [Contributing Guide](CONTRIBUTING.md) to get started.
+- Discover our upcoming vision in the [Roadmap](ROADMAP.md).
 - Check out our [Code of Conduct](CODE_OF_CONDUCT.md).
 - Explore open issues or propose new opportunities using our [Issue Templates](https://github.com/Damasoumana1/mcp-jobpilot-africa-/issues).
 
