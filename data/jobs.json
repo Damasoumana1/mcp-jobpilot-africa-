@@ -40,5 +40,47 @@
     "application_url": "https://example.com/jobs/3",
     "closing_date": "2027-02-20",
     "skills": ["Python", "FastAPI", "SQL", "Communication"]
+  },
+  {
+    "id": "JOB-004",
+    "title": "Junior Backend Engineer (Python / FastAPI)",
+    "company": "Wave Mobile Money",
+    "country": "Senegal",
+    "remote_allowed": true,
+    "employment_type": "full-time",
+    "duration_months": 12,
+    "compensation": "Competitive",
+    "description": "Scale financial services APIs, build reliable transaction services, and optimize distributed systems across West Africa.",
+    "application_url": "https://wave.com/careers",
+    "closing_date": "2027-05-30",
+    "skills": ["Python", "FastAPI", "SQL", "Docker", "Communication"]
+  },
+  {
+    "id": "JOB-005",
+    "title": "AI Research & Engineering Fellow",
+    "company": "InstaDeep",
+    "country": "Remote",
+    "remote_allowed": true,
+    "employment_type": "internship",
+    "duration_months": 6,
+    "compensation": "Paid",
+    "description": "Collaborate on cutting-edge reinforcement learning and decision-making AI systems solving real-world challenges.",
+    "application_url": "https://instadeep.com/careers",
+    "closing_date": "2027-06-15",
+    "skills": ["Python", "RAG", "LangGraph", "Qdrant", "SQL"]
+  },
+  {
+    "id": "JOB-006",
+    "title": "Junior AI Automation Associate",
+    "company": "Orange Digital Center",
+    "country": "Burkina Faso",
+    "remote_allowed": false,
+    "employment_type": "internship",
+    "duration_months": 6,
+    "compensation": "Stipend",
+    "description": "Support incubation startups with low-code AI automation, LLM workflows, and backend integrations.",
+    "application_url": "https://orangedigitalcenters.com",
+    "closing_date": "2027-04-15",
+    "skills": ["Python", "FastAPI", "n8n", "Communication"]
   }
 ]

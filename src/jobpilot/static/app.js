@@ -366,3 +366,128 @@ function escapeHtml(str) {
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
 }
+
+// Modal Management
+function openModal(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.add("open");
+}
+
+function closeModal(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.remove("open");
+}
+
+function openNewJobModal() {
+  openModal("new-job-modal");
+}
+
+async function handleCreateJob(event) {
+  event.preventDefault();
+  const rawSkills = document.getElementById("new-job-skills").value;
+  const skills = rawSkills.split(",").map(s => s.strip ? s.strip() : s.trim()).filter(Boolean);
+
+  const payload = {
+    id: document.getElementById("new-job-id").value.trim(),
+    title: document.getElementById("new-job-title").value.trim(),
+    company: document.getElementById("new-job-company").value.trim(),
+    country: document.getElementById("new-job-country").value.trim() || null,
+    remote_allowed: document.getElementById("new-job-remote").checked,
+    compensation: document.getElementById("new-job-comp").value.trim() || null,
+    description: document.getElementById("new-job-desc").value.trim() || null,
+    skills: skills
+  };
+
+  try {
+    const res = await fetch("/api/jobs", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) throw new Error("Erreur lors de la création");
+    const job = await res.json();
+    showToast(`Offre ${job.id} publiée avec succès !`, "success");
+    closeModal("new-job-modal");
+    await loadInitialData();
+  } catch (err) {
+    showToast(err.message, "error");
+  }
+}
+
+// Cover Letter & LinkedIn Pitch Modal
+async function openCoverLetterFromMatch() {
+  const candidateId = document.getElementById("match-candidate-select").value;
+  const jobId = document.getElementById("match-job-select").value;
+
+  try {
+    const res = await fetch("/api/applications/cover-letter", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ candidate_id: candidateId, job_id: jobId })
+    });
+    if (!res.ok) throw new Error("Erreur de génération de la lettre");
+    const data = await res.json();
+
+    document.getElementById("cl-subject").value = data.email_subject;
+    document.getElementById("cl-linkedin").value = data.linkedin_pitch;
+    document.getElementById("cl-body").value = data.cover_letter;
+
+    openModal("cover-letter-modal");
+  } catch (err) {
+    showToast("Impossible de générer le dossier de candidature", "error");
+  }
+}
+
+function copyText(elementId) {
+  const el = document.getElementById(elementId);
+  if (!el) return;
+  el.select();
+  navigator.clipboard.writeText(el.value).then(() => {
+    showToast("Copié dans le presse-papier !", "success");
+  }).catch(() => {
+    showToast("Erreur lors de la copie", "error");
+  });
+}
+
+// Floating Copilot Assistant
+function toggleCopilot() {
+  const drawer = document.getElementById("copilot-drawer");
+  if (drawer) drawer.classList.toggle("active");
+}
+
+async function handleCopilotSubmit(event) {
+  event.preventDefault();
+  const input = document.getElementById("copilot-input");
+  const msg = input.value.trim();
+  if (!msg) return;
+
+  const messagesContainer = document.getElementById("copilot-messages");
+  
+  // User bubble
+  const userBubble = document.createElement("div");
+  userBubble.className = "chat-bubble user";
+  userBubble.innerText = msg;
+  messagesContainer.appendChild(userBubble);
+  input.value = "";
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+  // Bot loading bubble
+  const botBubble = document.createElement("div");
+  botBubble.className = "chat-bubble bot";
+  botBubble.innerText = "Réflexion en cours...";
+  messagesContainer.appendChild(botBubble);
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+  try {
+    const res = await fetch("/api/copilot/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: msg, candidate_id: selectedCandidateId })
+    });
+    const data = await res.json();
+    botBubble.innerText = data.reply;
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  } catch (err) {
+    botBubble.innerText = "Désolé, une erreur est survenue lors du traitement.";
+  }
+}

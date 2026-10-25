@@ -61,6 +61,7 @@
           <h1 class="page-title">Opportunités Tech en Afrique</h1>
           <p class="page-desc">Stages et emplois débutants propulsés par l'intelligence artificielle et l'analyse de compétences.</p>
         </div>
+        <button class="btn btn-primary" onclick="openNewJobModal()">+ Publier une Offre</button>
       </div>
 
       <!-- Filters -->
@@ -91,7 +92,7 @@
       <div class="page-header">
         <div>
           <h2 class="page-title">Simulateur de Matching de Compétences</h2>
-          <p class="page-desc">Analysez en temps réel la correspondance entre votre profil et les exigences des recruteurs.</p>
+          <p class="page-desc">Analyse pondérée (compétences obligatoires vs bonus, mobilité géographique).</p>
         </div>
       </div>
 
@@ -110,8 +111,11 @@
             <select id="match-job-select" class="select-field" style="width: 100%;"></select>
           </div>
 
-          <button class="btn btn-accent" style="width: 100%; padding: 0.85rem;" onclick="runMatch()">
+          <button class="btn btn-accent" style="width: 100%; padding: 0.85rem; margin-bottom: 0.75rem;" onclick="runMatch()">
             <span>⚡</span> Recalculer le Matching
+          </button>
+          <button class="btn btn-primary" style="width: 100%; padding: 0.85rem;" onclick="openCoverLetterFromMatch()">
+            <span>✍️</span> Générer Lettre & Pitch
           </button>
         </div>
 
@@ -119,8 +123,10 @@
         <div class="glass-box">
           <div class="score-display">
             <div id="match-score-value" class="score-circle">75%</div>
-            <h4 style="font-family: 'Outfit'; font-size: 1.25rem; font-weight: 600;">Score de Pertinence IA</h4>
-            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem;">Basé sur la couverture des technologies exigées</p>
+            <h4 style="font-family: 'Outfit'; font-size: 1.25rem; font-weight: 600;">Score de Pertinence Pondéré</h4>
+            <p id="match-compatibility-tag" style="font-size: 0.85rem; color: var(--emerald); margin-top: 0.35rem;">
+              🌐 Compatible télétravail ou même pays
+            </p>
           </div>
 
           <div class="skills-dual-grid">
@@ -268,6 +274,123 @@
     </section>
 
   </main>
+
+  <!-- Modal: Publier une Offre (Recruteur) -->
+  <div id="new-job-modal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 style="font-family: 'Outfit'; font-size: 1.3rem;">Publier une Nouvelle Offre Tech</h3>
+        <button class="btn" style="padding: 4px 10px;" onclick="closeModal('new-job-modal')">✕</button>
+      </div>
+      <form onsubmit="handleCreateJob(event)" style="display: flex; flex-direction: column; gap: 1rem;">
+        <div>
+          <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 4px;">ID Offre (ex: JOB-010)</label>
+          <input type="text" id="new-job-id" class="input-field" required placeholder="JOB-010" />
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div>
+            <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Titre du Poste</label>
+            <input type="text" id="new-job-title" class="input-field" required placeholder="Ex: AI Automation Engineer" />
+          </div>
+          <div>
+            <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Entreprise</label>
+            <input type="text" id="new-job-company" class="input-field" required placeholder="Ex: Wave, InstaDeep..." />
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div>
+            <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Pays</label>
+            <input type="text" id="new-job-country" class="input-field" placeholder="Ex: Sénégal, Côte d'Ivoire..." />
+          </div>
+          <div>
+            <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Rémunération</label>
+            <input type="text" id="new-job-comp" class="input-field" placeholder="Ex: Paid, Competitive..." />
+          </div>
+        </div>
+        <div>
+          <label class="checkbox-wrap">
+            <input type="checkbox" id="new-job-remote" />
+            <span>Télétravail autorisé (Remote)</span>
+          </label>
+        </div>
+        <div>
+          <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Compétences requises (séparées par virgules)</label>
+          <input type="text" id="new-job-skills" class="input-field" placeholder="Python, FastAPI, Docker, SQL" />
+        </div>
+        <div>
+          <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Description du poste</label>
+          <textarea id="new-job-desc" class="input-field" rows="3" placeholder="Missions et responsabilités..."></textarea>
+        </div>
+        <button type="submit" class="btn btn-accent" style="padding: 0.75rem; margin-top: 0.5rem;">Enregistrer l'offre</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Lettre de Motivation & Pitch LinkedIn -->
+  <div id="cover-letter-modal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 750px;">
+      <div class="modal-header">
+        <h3 style="font-family: 'Outfit'; font-size: 1.3rem;">Dossier de Candidature & Pitch IA</h3>
+        <button class="btn" style="padding: 4px 10px;" onclick="closeModal('cover-letter-modal')">✕</button>
+      </div>
+
+      <div style="margin-bottom: 1.25rem;">
+        <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Objet d'Email Suggéré</label>
+        <div style="display: flex; gap: 0.5rem;">
+          <input type="text" id="cl-subject" class="input-field" readonly />
+          <button class="btn" onclick="copyText('cl-subject')">Copier</button>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 1.25rem;">
+        <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Pitch LinkedIn / Message Court Recruteur</label>
+        <div style="position: relative;">
+          <textarea id="cl-linkedin" class="input-field" rows="3" readonly style="font-size: 0.85rem;"></textarea>
+          <button class="btn" style="position: absolute; top: 8px; right: 8px; padding: 4px 8px; font-size: 0.75rem;" onclick="copyText('cl-linkedin')">Copier</button>
+        </div>
+      </div>
+
+      <div>
+        <label style="font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 4px;">Lettre de Motivation Personnalisée</label>
+        <div style="position: relative;">
+          <textarea id="cl-body" class="input-field" rows="9" readonly style="font-size: 0.85rem; line-height: 1.5;"></textarea>
+          <button class="btn" style="position: absolute; top: 8px; right: 8px; padding: 4px 8px; font-size: 0.75rem;" onclick="copyText('cl-body')">Copier</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Copilot Chat -->
+  <button class="copilot-btn" onclick="toggleCopilot()" title="Discuter avec JobPilot Copilot">
+    🤖
+  </button>
+
+  <div id="copilot-drawer" class="copilot-drawer">
+    <div class="copilot-header">
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <span style="font-size: 1.2rem;">🤖</span>
+        <div>
+          <div style="font-weight: 600; font-size: 0.95rem;">JobPilot Copilot</div>
+          <small style="color: var(--emerald);">En ligne • Assistant Carrière IA</small>
+        </div>
+      </div>
+      <button class="btn" style="padding: 2px 8px; font-size: 0.8rem;" onclick="toggleCopilot()">✕</button>
+    </div>
+
+    <div id="copilot-messages" class="copilot-messages">
+      <div class="chat-bubble bot">
+        Bonjour ! Je suis votre copilote IA pour vos opportunités tech en Afrique.
+        Posez-moi une question comme :
+        • <em>"Trouve-moi des opportunités en remote"</em>
+        • <em>"Quel est mon matching avec Wave ?"</em>
+      </div>
+    </div>
+
+    <form class="copilot-input-area" onsubmit="handleCopilotSubmit(event)">
+      <input type="text" id="copilot-input" placeholder="Posez une question à JobPilot..." />
+      <button type="submit" class="btn btn-primary" style="padding: 0 1rem;">Envoyer</button>
+    </form>
+  </div>
 
   <script src="/static/app.js"></script>
 </body>

@@ -111,18 +111,20 @@ Add the following to your `claude_desktop_config.json`:
 
 ---
 
-## 🛠️ MCP Tools Overview (10 Tools)
+## 🛠️ MCP Tools Overview (12 Tools)
 
 | Tool Name | Parameters | Description |
 | :--- | :--- | :--- |
 | `search_jobs` | `keywords`, `country`, `remote_only`, `min_duration_months` | Search tech opportunities with filtering. |
 | `get_job` | `job_id` | Retrieve complete job details and required skills. |
+| `create_job` | `job_id`, `title`, `company`, `skills`, ... | Register or update a job opportunity in the database. |
 | `get_candidate` | `candidate_id` | Retrieve full candidate profile including skills. |
 | `register_candidate` | `candidate_id`, `full_name`, `country`, `skills`, ... | Create or update candidate profile and skills. |
-| `match_candidate_to_job` | `candidate_id`, `job_id` | Calculate match score, common skills, gaps, and recommendations. |
+| `match_candidate_to_job` | `candidate_id`, `job_id` | Weighted matching score, gap analysis, and mobility compatibility. |
 | `create_application` | `candidate_id`, `job_id`, `status` | Create a tracked application record. |
 | `update_application_status` | `application_id`, `status`, `notes` | Update application progress and notes. |
 | `list_applications` | `candidate_id` | List tracked applications for a candidate. |
+| `generate_cover_letter` | `candidate_id`, `job_id`, `tone` | Generate tailored cover letter, email subject, and LinkedIn pitch. |
 | `generate_interview_questions` | `candidate_id`, `job_id`, `question_type`, `number` | Generate targeted technical and behavioral questions. |
 | `get_application_checklist` | `candidate_id`, `job_id` | Generate a prioritized preparation checklist. |
 

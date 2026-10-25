@@ -2,7 +2,13 @@ from __future__ import annotations
 
 from jobpilot.mcp_app import mcp
 from jobpilot.models.application import Application
-from jobpilot.services.application_service import create_application, list_applications, update_application_status
+from jobpilot.models.outreach import CoverLetter
+from jobpilot.services.application_service import (
+    create_application,
+    generate_cover_letter,
+    list_applications,
+    update_application_status,
+)
 
 
 @mcp.tool(name="create_application")
@@ -24,3 +30,10 @@ def list_applications_tool(candidate_id: str | None = None) -> list[Application]
     """List tracked applications, optionally filtered by a specific candidate_id."""
     raw_list = list_applications(candidate_id=candidate_id)
     return [Application.model_validate(app) for app in raw_list]
+
+
+@mcp.tool(name="generate_cover_letter")
+def generate_cover_letter_tool(candidate_id: str, job_id: str, tone: str = "professional") -> CoverLetter:
+    """Generate a tailored cover letter, email subject, and LinkedIn pitch for a candidate and job."""
+    raw = generate_cover_letter(candidate_id=candidate_id, job_id=job_id, tone=tone)
+    return CoverLetter.model_validate(raw)

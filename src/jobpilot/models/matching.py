@@ -12,3 +12,6 @@ class MatchResult(BaseModel):
     matching_skills: list[str] = Field(description="List of skills shared by the candidate and job")
     missing_skills: list[str] = Field(description="List of skills required by the job but missing from candidate profile")
     recommendations: list[str] = Field(description="Actionable advice to bridge gaps or prepare for the role")
+    relocation_needed: bool = Field(default=False, description="Whether the candidate needs to relocate for this on-site role")
+    remote_compatible: bool = Field(default=True, description="Whether remote working or same country aligns")
+    mandatory_skills_met: bool = Field(default=True, description="Whether all strictly required skills are satisfied")

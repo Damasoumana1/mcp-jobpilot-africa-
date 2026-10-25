@@ -71,3 +71,68 @@ def list_applications(candidate_id: str | None = None) -> list[dict]:
         return [dict(row) for row in rows]
     finally:
         conn.close()
+
+
+def generate_cover_letter(candidate_id: str, job_id: str, tone: str = "professional") -> dict:
+    """Generate a tailored cover letter, email subject, and LinkedIn outreach pitch."""
+    conn = get_connection()
+    try:
+        cand_row = conn.execute("SELECT * FROM candidates WHERE id = ?", (candidate_id,)).fetchone()
+        if not cand_row:
+            raise ValueError(f"Candidate '{candidate_id}' not found")
+        job_row = conn.execute("SELECT * FROM jobs WHERE id = ?", (job_id,)).fetchone()
+        if not job_row:
+            raise ValueError(f"Job '{job_id}' not found")
+
+        candidate = dict(cand_row)
+        job = dict(job_row)
+
+        skill_rows = conn.execute(
+            """
+            SELECT s.name
+            FROM candidate_skills cs
+            JOIN skills s ON s.id = cs.skill_id
+            WHERE cs.candidate_id = ?
+            """,
+            (candidate_id,),
+        ).fetchall()
+        skills = [r["name"] for r in skill_rows]
+    finally:
+        conn.close()
+
+    candidate_name = candidate["full_name"]
+    company = job["company"]
+    job_title = job["title"]
+    skills_summary = ", ".join(skills[:4]) if skills else "Python et les architectures modernes"
+
+    email_subject = f"Candidature : {job_title} - {candidate_name}"
+
+    cover_letter = (
+        f"Madame, Monsieur l'équipe de recrutement chez {company},\n\n"
+        f"C'est avec un grand enthousiasme que je vous adresse ma candidature pour l'opportunité de {job_title}. "
+        f"Titulaire d'un {candidate['education'] or 'parcours technique solide'} et passionné(e) par l'écosystème tech en Afrique, "
+        f"j'ai développé des compétences pratiques en {skills_summary}.\n\n"
+        f"Votre mission chez {company} résonne particulièrement avec mon projet professionnel. "
+        f"{job.get('description', '')[:200]}... "
+        f"Mon expérience me permet de m'adapter rapidement et d'apporter une valeur immédiate à votre équipe d'ingénierie.\n\n"
+        f"Je serais ravi(e) de convenir d'un échange afin de vous détailler mes réalisations et ma motivation.\n\n"
+        f"Bien cordialement,\n"
+        f"{candidate_name}\n"
+        f"{candidate.get('email', '')} | {candidate.get('country', '')}"
+    )
+
+    linkedin_pitch = (
+        f"Bonjour, je suis {candidate_name}, développeur basé en/au {candidate.get('country', 'Afrique')}. "
+        f"Très impressionné par la trajectoire de {company}, je viens de postuler pour le poste de {job_title}. "
+        f"Spécialisé en {skills_summary}, seriez-vous ouvert à un court échange de 10 min pour discuter des défis techniques de l'équipe ?"
+    )
+
+    return {
+        "candidate_id": candidate_id,
+        "job_id": job_id,
+        "company": company,
+        "job_title": job_title,
+        "email_subject": email_subject,
+        "cover_letter": cover_letter,
+        "linkedin_pitch": linkedin_pitch,
+    }

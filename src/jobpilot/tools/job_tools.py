@@ -33,3 +33,41 @@ def get_job_tool(job_id: str) -> Job:
     if job is None:
         raise ValueError(f"Job '{job_id}' not found")
     return Job.model_validate(job)
+
+
+@mcp.tool(name="create_job")
+def create_job_tool(
+    job_id: str,
+    title: str,
+    company: str,
+    country: str | None = None,
+    remote_allowed: bool = False,
+    employment_type: str = "internship",
+    duration_months: int | None = None,
+    compensation: str | None = None,
+    description: str | None = None,
+    application_url: str | None = None,
+    closing_date: str | None = None,
+    skills: list[str] | str | None = None,
+) -> Job:
+    """Register or update a job opportunity in the JobPilot database."""
+    from jobpilot.services.job_service import create_job
+    parsed_skills = skills
+    if isinstance(skills, str):
+        parsed_skills = [s.strip() for s in skills.split(",") if s.strip()]
+
+    raw_job = create_job(
+        id=job_id,
+        title=title,
+        company=company,
+        country=country,
+        remote_allowed=remote_allowed,
+        employment_type=employment_type,
+        duration_months=duration_months,
+        compensation=compensation,
+        description=description,
+        application_url=application_url,
+        closing_date=closing_date,
+        skills=parsed_skills,
+    )
+    return Job.model_validate(raw_job)

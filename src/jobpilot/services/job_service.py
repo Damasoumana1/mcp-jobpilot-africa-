@@ -74,3 +74,77 @@ def get_job(job_id: str) -> dict | None:
         return data
     finally:
         conn.close()
+
+
+def create_job(
+    id: str,
+    title: str,
+    company: str,
+    country: str | None = None,
+    remote_allowed: bool = False,
+    employment_type: str | None = "internship",
+    duration_months: int | None = None,
+    compensation: str | None = None,
+    description: str | None = None,
+    application_url: str | None = None,
+    closing_date: str | None = None,
+    skills: list[str] | None = None,
+) -> dict:
+    """Create a new job opportunity and associate its skills."""
+    conn = get_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            INSERT INTO jobs (
+                id, title, company, country, remote_allowed, employment_type,
+                duration_months, compensation, description, application_url, closing_date
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(id) DO UPDATE SET
+                title = excluded.title,
+                company = excluded.company,
+                country = excluded.country,
+                remote_allowed = excluded.remote_allowed,
+                employment_type = excluded.employment_type,
+                duration_months = excluded.duration_months,
+                compensation = excluded.compensation,
+                description = excluded.description,
+                application_url = excluded.application_url,
+                closing_date = excluded.closing_date
+            """,
+            (
+                id,
+                title,
+                company,
+                country,
+                int(bool(remote_allowed)),
+                employment_type,
+                duration_months,
+                compensation,
+                description,
+                application_url,
+                closing_date,
+            ),
+        )
+
+        if skills:
+            cursor.execute("DELETE FROM job_skills WHERE job_id = ?", (id,))
+            for skill_name in skills:
+                cursor.execute(
+                    "INSERT OR IGNORE INTO skills (name, category) VALUES (?, ?)",
+                    (skill_name, "technical"),
+                )
+                skill_row = cursor.execute("SELECT id FROM skills WHERE name = ?", (skill_name,)).fetchone()
+                if skill_row:
+                    cursor.execute(
+                        """
+                        INSERT OR IGNORE INTO job_skills (job_id, skill_id, required_level, is_required)
+                        VALUES (?, ?, ?, ?)
+                        """,
+                        (id, skill_row["id"], "intermediate", 1),
+                    )
+
+        conn.commit()
+        return get_job(id) or {}
+    finally:
+        conn.close()
