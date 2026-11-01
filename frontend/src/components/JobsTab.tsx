@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Search, Plus, MapPin, Globe, Sparkles, Building2, CheckCircle2, ArrowRight } from 'lucide-react';
 import type { Job } from '../types';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface JobsTabProps {
   jobs: Job[];
@@ -19,6 +20,7 @@ export const JobsTab: React.FC<JobsTabProps> = ({
   onApplyJob,
   appliedJobIds,
 }) => {
+  const { t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCountry, setSelectedCountry] = useState('all');
   const [onlyRemote, setOnlyRemote] = useState(false);
@@ -83,7 +85,7 @@ export const JobsTab: React.FC<JobsTabProps> = ({
               className="flex items-center space-x-2 px-4 py-2.5 rounded-xl text-sm font-semibold bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-lg shadow-emerald-500/20 transition-all transform hover:-translate-y-0.5"
             >
               <Plus className="w-4 h-4" />
-              <span>Publier une Offre</span>
+              <span>{t.jobs.post_job}</span>
             </button>
           </div>
         </div>
@@ -98,7 +100,7 @@ export const JobsTab: React.FC<JobsTabProps> = ({
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Rechercher par titre, stack, entreprise..."
+            placeholder={t.jobs.search_placeholder}
             className="w-full pl-10 pr-4 py-2 bg-slate-950/80 border border-slate-700/80 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
           />
         </div>
@@ -113,7 +115,7 @@ export const JobsTab: React.FC<JobsTabProps> = ({
           >
             {countries.map((c) => (
               <option key={c} value={c}>
-                {c === 'all' ? '🌍 Tous les pays' : `📍 ${c}`}
+                {c === 'all' ? `🌍 ${t.jobs.country_all}` : `📍 ${c}`}
               </option>
             ))}
           </select>
@@ -127,7 +129,7 @@ export const JobsTab: React.FC<JobsTabProps> = ({
               className="w-4 h-4 rounded border-slate-700 text-emerald-500 focus:ring-emerald-400 bg-slate-900"
             />
             <span className="flex items-center gap-1">
-              <Globe className="w-3.5 h-3.5 text-cyan-400" /> Télétravail uniquement
+              <Globe className="w-3.5 h-3.5 text-cyan-400" /> {t.jobs.remote_only}
             </span>
           </label>
         </div>
@@ -221,13 +223,13 @@ export const JobsTab: React.FC<JobsTabProps> = ({
                       className="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 flex items-center gap-1.5 transition-colors"
                     >
                       <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-                      <span>Score Match IA</span>
+                      <span>{t.jobs.match_score}</span>
                     </button>
                     <button
                       onClick={() => onGenerateCoverLetter(job.id)}
                       className="px-3 py-1.5 rounded-lg text-xs font-medium bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 border border-purple-500/30 flex items-center gap-1.5 transition-colors"
                     >
-                      <span>Lettre & Pitch</span>
+                      <span>{t.jobs.letter_pitch}</span>
                     </button>
                   </div>
 
@@ -241,7 +243,7 @@ export const JobsTab: React.FC<JobsTabProps> = ({
                         onClick={() => onApplyJob(job.id)}
                         className="px-4 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500 hover:bg-emerald-400 text-slate-950 flex items-center gap-1.5 shadow-md shadow-emerald-500/20 transition-all"
                       >
-                        <span>Postuler</span>
+                        <span>{t.jobs.apply}</span>
                         <ArrowRight className="w-3.5 h-3.5" />
                       </button>
                     )}

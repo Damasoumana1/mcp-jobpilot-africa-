@@ -73,8 +73,8 @@ def list_applications(candidate_id: str | None = None) -> list[dict]:
         conn.close()
 
 
-def generate_cover_letter(candidate_id: str, job_id: str, tone: str = "professional") -> dict:
-    """Generate a tailored cover letter, email subject, and LinkedIn outreach pitch."""
+def generate_cover_letter(candidate_id: str, job_id: str, tone: str = "professional", language: str = "fr") -> dict:
+    """Generate a tailored cover letter, email subject, and LinkedIn outreach pitch (FR/EN)."""
     conn = get_connection()
     try:
         cand_row = conn.execute("SELECT * FROM candidates WHERE id = ?", (candidate_id,)).fetchone()
@@ -105,27 +105,47 @@ def generate_cover_letter(candidate_id: str, job_id: str, tone: str = "professio
     job_title = job["title"]
     skills_summary = ", ".join(skills[:4]) if skills else "Python et les architectures modernes"
 
-    email_subject = f"Candidature : {job_title} - {candidate_name}"
+    is_english = language.strip().lower().startswith("en")
 
-    cover_letter = (
-        f"Madame, Monsieur l'équipe de recrutement chez {company},\n\n"
-        f"C'est avec un grand enthousiasme que je vous adresse ma candidature pour l'opportunité de {job_title}. "
-        f"Titulaire d'un {candidate['education'] or 'parcours technique solide'} et passionné(e) par l'écosystème tech en Afrique, "
-        f"j'ai développé des compétences pratiques en {skills_summary}.\n\n"
-        f"Votre mission chez {company} résonne particulièrement avec mon projet professionnel. "
-        f"{job.get('description', '')[:200]}... "
-        f"Mon expérience me permet de m'adapter rapidement et d'apporter une valeur immédiate à votre équipe d'ingénierie.\n\n"
-        f"Je serais ravi(e) de convenir d'un échange afin de vous détailler mes réalisations et ma motivation.\n\n"
-        f"Bien cordialement,\n"
-        f"{candidate_name}\n"
-        f"{candidate.get('email', '')} | {candidate.get('country', '')}"
-    )
-
-    linkedin_pitch = (
-        f"Bonjour, je suis {candidate_name}, développeur basé en/au {candidate.get('country', 'Afrique')}. "
-        f"Très impressionné par la trajectoire de {company}, je viens de postuler pour le poste de {job_title}. "
-        f"Spécialisé en {skills_summary}, seriez-vous ouvert à un court échange de 10 min pour discuter des défis techniques de l'équipe ?"
-    )
+    if is_english:
+        email_subject = f"Application: {job_title} - {candidate_name}"
+        cover_letter = (
+            f"Dear Hiring Team at {company},\n\n"
+            f"I am writing to express my strong enthusiasm for the {job_title} position. "
+            f"Holding a background in {candidate['education'] or 'Software Engineering'} and passionate about accelerating Africa's tech ecosystem, "
+            f"I have developed hands-on technical skills in {skills_summary}.\n\n"
+            f"Your mission at {company} strongly aligns with my career ambitions. "
+            f"My practical experience allows me to adapt quickly and deliver immediate value to your engineering team.\n\n"
+            f"I would welcome the opportunity to discuss my background and how my skills can contribute to your goals.\n\n"
+            f"Best regards,\n"
+            f"{candidate_name}\n"
+            f"{candidate.get('email', '')} | {candidate.get('country', '')}"
+        )
+        linkedin_pitch = (
+            f"Hi! I'm {candidate_name}, a software engineer based in {candidate.get('country', 'Africa')}. "
+            f"Passionate about {company}'s tech impact, I recently applied for the {job_title} role. "
+            f"With expertise in {skills_summary}, I would love to connect and learn more about your technical roadmap!"
+        )
+    else:
+        email_subject = f"Candidature : {job_title} - {candidate_name}"
+        cover_letter = (
+            f"Madame, Monsieur l'équipe de recrutement chez {company},\n\n"
+            f"C'est avec un grand enthousiasme que je vous adresse ma candidature pour l'opportunité de {job_title}. "
+            f"Titulaire d'un {candidate['education'] or 'parcours technique solide'} et passionné(e) par l'écosystème tech en Afrique, "
+            f"j'ai développé des compétences pratiques en {skills_summary}.\n\n"
+            f"Votre mission chez {company} résonne particulièrement avec mon projet professionnel. "
+            f"{job.get('description', '')[:200]}... "
+            f"Mon expérience me permet de m'adapter rapidement et d'apporter une valeur immédiate à votre équipe d'ingénierie.\n\n"
+            f"Je serais ravi(e) de convenir d'un échange afin de vous détailler mes réalisations et ma motivation.\n\n"
+            f"Bien cordialement,\n"
+            f"{candidate_name}\n"
+            f"{candidate.get('email', '')} | {candidate.get('country', '')}"
+        )
+        linkedin_pitch = (
+            f"Bonjour, je suis {candidate_name}, développeur basé en/au {candidate.get('country', 'Afrique')}. "
+            f"Très impressionné par la trajectoire de {company}, je viens de postuler pour le poste de {job_title}. "
+            f"Spécialisé en {skills_summary}, seriez-vous ouvert à un court échange de 10 min pour discuter des défis techniques de l'équipe ?"
+        )
 
     return {
         "candidate_id": candidate_id,
@@ -136,3 +156,4 @@ def generate_cover_letter(candidate_id: str, job_id: str, tone: str = "professio
         "cover_letter": cover_letter,
         "linkedin_pitch": linkedin_pitch,
     }
+

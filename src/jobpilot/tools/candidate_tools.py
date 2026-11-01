@@ -54,3 +54,19 @@ def match_candidate_to_job_tool(candidate_id: str, job_id: str) -> MatchResult:
     """Compare a candidate profile against a job and return score, matched skills, gaps, and recommendations."""
     raw = match_candidate_to_job(candidate_id=candidate_id, job_id=job_id)
     return MatchResult.model_validate(raw)
+
+
+@mcp.tool(name="parse_resume")
+def parse_resume_tool(
+    resume_text: str,
+    candidate_id: str | None = None,
+    auto_save: bool = False,
+) -> dict:
+    """Parse resume text, automatically extract technical skills, contact info, education and languages, and optionally update the candidate profile."""
+    from jobpilot.services.resume_service import parse_resume
+    return parse_resume(
+        resume_text=resume_text,
+        candidate_id=candidate_id,
+        auto_save=auto_save,
+    )
+

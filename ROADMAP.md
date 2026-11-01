@@ -26,10 +26,15 @@ To build the most accessible, AI-powered career accelerator for African early-ca
 - [x] **Job Sourcing Across Africa**:
   - Added 27 high-impact tech opportunities covering Burkina Faso, Senegal, Côte d'Ivoire, Nigeria (Lagos), Kenya (Nairobi), Rwanda (Kigali), Ghana (Accra), Cameroon (Douala/Yaoundé), Benin (Cotonou), Togo (Lomé), Morocco (Casablanca), Tunisia (Tunis), Egypt (Cairo), and South Africa (Cape Town/Johannesburg).
   - Top startups & tech champions featured: Wave, Paystack, Flutterwave, Moniepoint, Safaricom (M-Pesa), InstaDeep, Irembo, Zipline, Zeepay, mPharma, Maviance, FedaPay, Gozem, Chari, Fawry, Swvl, Yoco, Takealot, and Turing Africa.
-- [ ] **Resume / CV Parser**:
-  - Upload CV (PDF or docx) and extract skills, experience, and education automatically.
-- [ ] **Internationalization (i18n)**:
-  - Multi-language support (English / French) for both the frontend and MCP response schemas.
+- [x] **Resume / CV Parser (Completed ✅)**:
+  - Added FastMCP tool `parse_resume` and `POST /api/candidates/parse-resume` endpoint.
+  - Automatic tech skills extraction (100+ catalog), contact coordinates, education, and language parsing.
+  - Interactive modal in React UI with 1-click sample test and instant profile synchronization.
+- [x] **Internationalization (i18n) (Completed ✅)**:
+  - Multi-language support (English / French) across the React 19 UI with persistent local storage.
+  - Interactive language switcher toggle (`FR` / `EN`) in the Navbar.
+  - Bilingual cover letters, email subjects, and LinkedIn outreach generation in FastMCP tool and API.
+
 
 ---
 

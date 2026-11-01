@@ -1,5 +1,6 @@
 import React from 'react';
 import { Briefcase, Target, FileText, Mic, User, Bot, Sparkles } from 'lucide-react';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface NavbarProps {
   activeTab: string;
@@ -16,12 +17,14 @@ export const Navbar: React.FC<NavbarProps> = ({
   applicationsCount,
   jobsCount,
 }) => {
+  const { lang, setLang, t } = useLanguage();
+
   const navItems = [
-    { id: 'jobs', label: 'Offres Tech', icon: Briefcase, badge: jobsCount },
-    { id: 'matching', label: 'Matching IA', icon: Target },
-    { id: 'applications', label: 'Candidatures', icon: FileText, badge: applicationsCount },
-    { id: 'interview', label: 'Studio Entretien', icon: Mic },
-    { id: 'profile', label: 'Mon Profil', icon: User },
+    { id: 'jobs', label: t.nav.jobs, icon: Briefcase, badge: jobsCount },
+    { id: 'matching', label: t.nav.matching, icon: Target },
+    { id: 'applications', label: t.nav.applications, icon: FileText, badge: applicationsCount },
+    { id: 'interview', label: t.nav.interview, icon: Mic },
+    { id: 'profile', label: t.nav.profile, icon: User },
   ];
 
   return (
@@ -46,7 +49,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </span>
               </div>
               <p className="text-xs text-slate-400 hidden sm:block">
-                Propulseur de carrière tech en Afrique de l'Ouest & Centrale
+                {t.nav.tagline}
               </p>
             </div>
           </div>
@@ -83,14 +86,41 @@ export const Navbar: React.FC<NavbarProps> = ({
             })}
           </nav>
 
-          {/* Copilot Action Button */}
+          {/* Actions: Language Switcher & Copilot Button */}
           <div className="flex items-center space-x-3">
+            
+            {/* Language Selector */}
+            <div className="flex items-center bg-slate-900 border border-slate-700/80 rounded-xl p-1 shadow-inner">
+              <button
+                onClick={() => setLang('fr')}
+                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
+                  lang === 'fr'
+                    ? 'bg-emerald-500 text-slate-950 shadow-md'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+                title="Français"
+              >
+                FR
+              </button>
+              <button
+                onClick={() => setLang('en')}
+                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all ${
+                  lang === 'en'
+                    ? 'bg-emerald-500 text-slate-950 shadow-md'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+                title="English"
+              >
+                EN
+              </button>
+            </div>
+
             <button
               onClick={openCopilot}
               className="flex items-center space-x-2 px-3.5 py-2 rounded-xl text-sm font-semibold bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 shadow-lg shadow-emerald-500/25 transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0"
             >
               <Bot className="w-4 h-4" />
-              <span className="hidden sm:inline">Copilot IA</span>
+              <span className="hidden sm:inline">{t.nav.copilot}</span>
             </button>
           </div>
 
@@ -119,3 +149,4 @@ export const Navbar: React.FC<NavbarProps> = ({
     </header>
   );
 };
+

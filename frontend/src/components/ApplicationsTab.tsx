@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { FileText, Calendar, Building2, Sparkles, AlertCircle } from 'lucide-react';
 import type { Application } from '../types';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface ApplicationsTabProps {
   applications: Application[];
@@ -15,14 +16,15 @@ export const ApplicationsTab: React.FC<ApplicationsTabProps> = ({
   onRefresh,
   onGenerateCoverLetter,
 }) => {
+  const { t } = useLanguage();
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   const statuses = [
-    { value: 'saved', label: 'Sauvegardé', color: 'bg-slate-700 text-slate-300' },
-    { value: 'applied', label: 'Postulé', color: 'bg-blue-500/20 text-blue-300 border-blue-500/40' },
-    { value: 'interview', label: 'En Entretien', color: 'bg-amber-500/20 text-amber-300 border-amber-500/40' },
-    { value: 'offer', label: 'Offre Reçue 🎉', color: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' },
-    { value: 'rejected', label: 'Refusé', color: 'bg-rose-500/20 text-rose-300 border-rose-500/40' },
+    { value: 'saved', label: t.applications.status_saved, color: 'bg-slate-700 text-slate-300' },
+    { value: 'applied', label: t.applications.status_applied, color: 'bg-blue-500/20 text-blue-300 border-blue-500/40' },
+    { value: 'interview', label: t.applications.status_interview, color: 'bg-amber-500/20 text-amber-300 border-amber-500/40' },
+    { value: 'offer', label: t.applications.status_offer, color: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' },
+    { value: 'rejected', label: t.applications.status_rejected, color: 'bg-rose-500/20 text-rose-300 border-rose-500/40' },
   ];
 
   const handleStatusSelect = async (appId: string, status: string) => {
@@ -44,19 +46,19 @@ export const ApplicationsTab: React.FC<ApplicationsTabProps> = ({
       {/* Stats Counter Bar */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="bg-[#0d1424] border border-slate-800 rounded-2xl p-4">
-          <div className="text-xs text-slate-400">Total Suivi</div>
+          <div className="text-xs text-slate-400">{t.applications.total}</div>
           <div className="text-2xl font-bold font-display text-white mt-1">{counts.total}</div>
         </div>
         <div className="bg-[#0d1424] border border-slate-800 rounded-2xl p-4">
-          <div className="text-xs text-blue-400">Candidatures Envoyées</div>
+          <div className="text-xs text-blue-400">{t.applications.sent}</div>
           <div className="text-2xl font-bold font-display text-blue-300 mt-1">{counts.applied}</div>
         </div>
         <div className="bg-[#0d1424] border border-slate-800 rounded-2xl p-4">
-          <div className="text-xs text-amber-400">Entretiens en cours</div>
+          <div className="text-xs text-amber-400">{t.applications.interviews}</div>
           <div className="text-2xl font-bold font-display text-amber-300 mt-1">{counts.interview}</div>
         </div>
         <div className="bg-[#0d1424] border border-slate-800 rounded-2xl p-4">
-          <div className="text-xs text-emerald-400">Offres Obtenues</div>
+          <div className="text-xs text-emerald-400">{t.applications.offers}</div>
           <div className="text-2xl font-bold font-display text-emerald-300 mt-1">{counts.offer}</div>
         </div>
       </div>
@@ -82,11 +84,8 @@ export const ApplicationsTab: React.FC<ApplicationsTabProps> = ({
         {applications.length === 0 ? (
           <div className="p-12 text-center">
             <AlertCircle className="w-10 h-10 text-slate-600 mx-auto mb-3" />
-            <p className="text-slate-400 text-sm">
-              Vous n'avez pas encore de candidature enregistrée.
-            </p>
-            <p className="text-slate-500 text-xs mt-1">
-              Rendez-vous dans l'onglet "Offres Tech" et cliquez sur "Postuler" pour lancer un suivi.
+            <p className="text-slate-400 text-sm max-w-md mx-auto">
+              {t.applications.no_applications}
             </p>
           </div>
         ) : (

@@ -21,6 +21,8 @@ from jobpilot.services.candidate_service import get_candidate, list_candidates, 
 from jobpilot.services.interview_service import generate_interview_questions, get_application_checklist
 from jobpilot.services.job_service import create_job, get_job, search_jobs
 from jobpilot.services.matching_service import match_candidate_to_job
+from jobpilot.services.resume_service import parse_resume
+
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 
@@ -95,7 +97,28 @@ async def api_candidates(request: Request) -> JSONResponse:
         return JSONResponse(candidate, status_code=201)
 
 
+async def api_parse_resume(request: Request) -> JSONResponse:
+    payload = await request.json()
+    resume_text = payload.get("resume_text")
+    if not resume_text:
+        return JSONResponse({"error": "resume_text is required"}, status_code=400)
+    
+    candidate_id = payload.get("candidate_id", "DAMA-001")
+    auto_save = payload.get("auto_save", False)
+
+    try:
+        parsed = parse_resume(
+            resume_text=resume_text,
+            candidate_id=candidate_id,
+            auto_save=auto_save,
+        )
+        return JSONResponse(parsed)
+    except ValueError as e:
+        return JSONResponse({"error": str(e)}, status_code=400)
+
+
 async def api_candidate_detail(request: Request) -> JSONResponse:
+
     candidate_id = request.path_params["candidate_id"]
     candidate = get_candidate(candidate_id)
     if not candidate:
@@ -151,8 +174,9 @@ async def api_cover_letter(request: Request) -> JSONResponse:
     candidate_id = payload.get("candidate_id")
     job_id = payload.get("job_id")
     tone = payload.get("tone", "professional")
+    language = payload.get("language", "fr")
     try:
-        result = generate_cover_letter(candidate_id=candidate_id, job_id=job_id, tone=tone)
+        result = generate_cover_letter(candidate_id=candidate_id, job_id=job_id, tone=tone, language=language)
         return JSONResponse(result)
     except ValueError as e:
         return JSONResponse({"error": str(e)}, status_code=400)
@@ -244,6 +268,7 @@ routes = [
     Route("/api/jobs", endpoint=api_jobs, methods=["GET", "POST"]),
     Route("/api/jobs/{job_id}", endpoint=api_job_detail, methods=["GET"]),
     Route("/api/candidates", endpoint=api_candidates, methods=["GET", "POST"]),
+    Route("/api/candidates/parse-resume", endpoint=api_parse_resume, methods=["POST"]),
     Route("/api/candidates/{candidate_id}", endpoint=api_candidate_detail, methods=["GET"]),
     Route("/api/match", endpoint=api_match, methods=["POST"]),
     Route("/api/applications", endpoint=api_applications, methods=["GET", "POST"]),

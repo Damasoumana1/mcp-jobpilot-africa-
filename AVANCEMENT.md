@@ -54,7 +54,7 @@ Le projet combine l'intelligence artificielle agentique (FastMCP), une base de d
 
 ---
 
-## 🛠️ 3. Catalogue des Outils MCP Développés (12 / 12)
+## 🛠️ 3. Catalogue des Outils MCP Développés (13 / 13)
 
 Tous les outils sont enregistrés sur l'instance unique FastMCP (`src/jobpilot/mcp_app.py`) et validés par les schémas Pydantic v2 :
 
@@ -66,12 +66,13 @@ Tous les outils sont enregistrés sur l'instance unique FastMCP (`src/jobpilot/m
 | 4 | `get_candidate` | `candidate_id` | Récupération du profil, formation, bio et compétences. |
 | 5 | `register_candidate` | `candidate_id`, `full_name`, `country`, `skills` | Création ou mise à jour du profil candidat. |
 | 6 | `match_candidate_to_job` | `candidate_id`, `job_id` | Algorithme de score pondéré (0-100%), compétences validées et lacunes. |
-| 7 | `create_application` | `candidate_id`, `job_id`, `status`, `notes` | Création d'une candidature suivie en base SQLite. |
-| 8 | `update_application_status`| `application_id`, `status`, `notes` | Cycle de vie : `saved`, `applied`, `interview`, `offer`, `rejected`. |
-| 9 | `list_applications` | `candidate_id` | Tableau de bord de suivi des candidatures d'un profil. |
-| 10 | `generate_cover_letter` | `candidate_id`, `job_id`, `tone` | Rédaction automatique d'objet d'e-mail, lettre et pitch LinkedIn. |
-| 11 | `generate_interview_questions` | `role_title`, `category`, `difficulty` | Simulateur de questions techniques & culturelles (format STAR). |
-| 12 | `get_application_checklist` | `candidate_id`, `job_id` | Checklist en 3 phases (Avant / Pendant / Après l'entretien). |
+| 7 | `parse_resume` | `resume_text`, `candidate_id`, `auto_save` | Analyseur IA de CV : extraction de 100+ compétences, diplômes, langues et mise à jour profil. |
+| 8 | `create_application` | `candidate_id`, `job_id`, `status`, `notes` | Création d'une candidature suivie en base SQLite. |
+| 9 | `update_application_status`| `application_id`, `status`, `notes` | Cycle de vie : `saved`, `applied`, `interview`, `offer`, `rejected`. |
+| 10 | `list_applications` | `candidate_id` | Tableau de bord de suivi des candidatures d'un profil. |
+| 11 | `generate_cover_letter` | `candidate_id`, `job_id`, `tone` | Rédaction automatique d'objet d'e-mail, lettre et pitch LinkedIn. |
+| 12 | `generate_interview_questions` | `role_title`, `category`, `difficulty` | Simulateur de questions techniques & culturelles (format STAR). |
+| 13 | `get_application_checklist` | `candidate_id`, `job_id` | Checklist en 3 phases (Avant / Pendant / Après l'entretien). |
 
 ---
 
@@ -115,7 +116,7 @@ Développée dans le dossier `frontend/` avec un design sombre soigné, typograp
   - *Solution* : Normalisation défensive dans `App.tsx` et tolérance multi-noms dans `JobsTab.tsx` et `types.ts`.
 - **Packaging & Tests Automatisés** :
   - Mise en place d'un fixture de base de données temporaire isolée (`tests/conftest.py`).
-  - **28 tests pytest passent à 100% au vert** en 10 secondes.
+  - **34 tests pytest passent à 100% au vert** (incluant les tests bilingues FR/EN et le parser de CV).
   - Build Vite de production sans aucune erreur TypeScript (`tsc -b && vite build` validé).
 
 ---
@@ -147,12 +148,16 @@ Le projet est désormais armé pour accueillir une communauté mondiale de contr
 1. **Enrichissement Panafricain des Offres (Complété ✅)** :
    - Base étendue à **27 opportunités tech** réparties sur **14 hubs et pays majeurs** : Burkina Faso, Sénégal, Côte d'Ivoire, Nigéria (Paystack, Flutterwave, Moniepoint), Kenya (Safaricom M-Pesa, Twiga), Rwanda (Irembo, Zipline), Ghana (Zeepay, mPharma), Cameroun (Maviance, Koree), Bénin (FedaPay), Togo (Gozem), Maroc (Chari), Tunisie (InstaDeep), Égypte (Fawry, Swvl), Afrique du Sud (Yoco, Takealot) et Remote International (Turing Africa).
    - Filtre géographique frontend (`JobsTab.tsx`) rendu 100% dynamique.
-2. **Support Multilingue (i18n)** :
-   - Intégrer un sélecteur de langue Français / Anglais dans l'interface React pour toucher les développeurs anglophones.
-3. **Analyseur de CV (PDF Parser)** :
-   - Permettre l'upload de CV en PDF avec extraction automatique des compétences vers le profil candidat.
-4. **Guide Clients MCP** :
+2. **Analyseur de CV IA (Complété ✅)** :
+   - Ajout du 13ᵉ outil FastMCP `parse_resume` et de la route `POST /api/candidates/parse-resume`.
+   - Modale intelligente `ResumeParserModal.tsx` permettant de scanner un CV (texte ou fichier), d'extraire automatiquement 100+ compétences tech, l'expérience, les diplômes et de synchroniser le profil candidat en 1 clic.
+3. **Support Multilingue i18n (Complété ✅)** :
+   - Sélecteur de langue interactif **FR / EN** dans la Navbar avec persistance dans le `localStorage`.
+   - Dictionnaire complet de traductions pour tous les onglets, filtres, cartes d'offres, formulaires et Copilot.
+   - Génération bilingue (Français et Anglais) des lettres de motivation, objets de mails et pitchs LinkedIn.
+4. **Guide Clients MCP & Export de Pack Candidature** :
    - Fournir des fichiers de configuration prêts à copier pour Claude Desktop (`claude_desktop_config.json`) et Cursor IDE.
+
 
 ---
 

@@ -115,7 +115,7 @@ Add the following to your `claude_desktop_config.json`:
 
 ---
 
-## 🛠️ MCP Tools Overview (12 Tools)
+## 🛠️ MCP Tools Overview (13 Tools)
 
 | Tool Name | Parameters | Description |
 | :--- | :--- | :--- |
@@ -125,6 +125,7 @@ Add the following to your `claude_desktop_config.json`:
 | `get_candidate` | `candidate_id` | Retrieve full candidate profile including skills. |
 | `register_candidate` | `candidate_id`, `full_name`, `country`, `skills`, ... | Create or update candidate profile and skills. |
 | `match_candidate_to_job` | `candidate_id`, `job_id` | Weighted matching score, gap analysis, and mobility compatibility. |
+| `parse_resume` | `resume_text`, `candidate_id`, `auto_save` | AI resume parser extracting skills, education, and syncing to profile. |
 | `create_application` | `candidate_id`, `job_id`, `status` | Create a tracked application record. |
 | `update_application_status` | `application_id`, `status`, `notes` | Update application progress and notes. |
 | `list_applications` | `candidate_id` | List tracked applications for a candidate. |

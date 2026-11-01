@@ -8,8 +8,10 @@ import { ProfileTab } from './components/ProfileTab';
 import { CoverLetterModal } from './components/CoverLetterModal';
 import { NewJobModal } from './components/NewJobModal';
 import { CopilotChat } from './components/CopilotChat';
+import { ResumeParserModal } from './components/ResumeParserModal';
 import type { Job, Candidate, Application, CoverLetterResponse } from './types';
 import { CheckCircle2, AlertCircle, Bot } from 'lucide-react';
+import { useLanguage } from './i18n/LanguageContext';
 
 const DEFAULT_CANDIDATE: Candidate = {
   id: 'DAMA-001',
@@ -26,6 +28,7 @@ const DEFAULT_CANDIDATE: Candidate = {
 };
 
 export const App: React.FC = () => {
+  const { lang } = useLanguage();
   const [activeTab, setActiveTab] = useState<string>('jobs');
   const [jobs, setJobs] = useState<Job[]>([]);
   const [candidate, setCandidate] = useState<Candidate>(DEFAULT_CANDIDATE);
@@ -34,6 +37,7 @@ export const App: React.FC = () => {
 
   // Modals & Chat
   const [isNewJobOpen, setIsNewJobOpen] = useState(false);
+  const [isResumeParserOpen, setIsResumeParserOpen] = useState(false);
   const [coverLetterData, setCoverLetterData] = useState<CoverLetterResponse | null>(null);
   const [isCopilotOpen, setIsCopilotOpen] = useState(false);
   const [preselectedJobIdForMatching, setPreselectedJobIdForMatching] = useState<string | null>(null);
@@ -160,6 +164,7 @@ export const App: React.FC = () => {
         body: JSON.stringify({
           job_id: jobId,
           candidate_id: candidate.id,
+          language: lang,
         }),
       });
 
@@ -243,6 +248,7 @@ export const App: React.FC = () => {
           <ProfileTab
             candidate={candidate}
             onExploreJobs={() => setActiveTab('jobs')}
+            onOpenResumeParser={() => setIsResumeParserOpen(true)}
           />
         )}
       </main>
@@ -268,6 +274,17 @@ export const App: React.FC = () => {
         isOpen={isNewJobOpen}
         onClose={() => setIsNewJobOpen(false)}
         onJobCreated={handleJobCreated}
+      />
+
+      <ResumeParserModal
+        isOpen={isResumeParserOpen}
+        onClose={() => setIsResumeParserOpen(false)}
+        candidateId={candidate.id}
+        onProfileUpdated={(updated) => {
+          setCandidate(updated);
+          fetchData();
+        }}
+        showToast={showToast}
       />
 
       <CopilotChat

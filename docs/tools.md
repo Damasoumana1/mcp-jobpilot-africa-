@@ -1,6 +1,6 @@
 # MCP Tools Reference
 
-JobPilot Africa exposes 12 tools via the Model Context Protocol to empower AI agents and candidate workflows:
+JobPilot Africa exposes 13 tools via the Model Context Protocol to empower AI agents and candidate workflows:
 
 ---
 
@@ -63,6 +63,14 @@ Weighted matching calculation taking into account mandatory vs optional skills, 
   * `candidate_id` (`str`): Candidate identifier.
   * `job_id` (`str`): Job identifier.
 * **Returns:** `MatchResult` (`match_score`, `matching_skills`, `missing_skills`, `recommendations`, `relocation_needed`, `remote_compatible`, `mandatory_skills_met`)
+
+### `parse_resume`
+Intelligent resume parser that extracts technical skills, contact coordinates, education degrees, spoken languages, and estimated years of experience, with optional auto-sync to the candidate's profile.
+* **Arguments:**
+  * `resume_text` (`str`): Raw resume text content.
+  * `candidate_id` (`str | None`, default: `None`): Candidate ID to associate or update.
+  * `auto_save` (`bool`, default: `False`): When `True`, automatically updates or creates the candidate profile in the SQLite database.
+* **Returns:** `dict` containing extracted `skills`, `skills_count`, `full_name`, `email`, `country`, `experience_years`, `education`, `languages`, `summary`, and `auto_saved` status.
 
 ---
 

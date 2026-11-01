@@ -11,7 +11,8 @@ def test_index_page_returns_html():
     res = client.get("/")
     assert res.status_code == 200
     assert "JobPilot Africa" in res.text
-    assert "Opportunités Tech en Afrique" in res.text
+    assert "id=\"root\"" in res.text
+
 
 
 def test_api_jobs_get_and_post():

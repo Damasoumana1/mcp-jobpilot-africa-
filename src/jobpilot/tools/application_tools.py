@@ -33,7 +33,13 @@ def list_applications_tool(candidate_id: str | None = None) -> list[Application]
 
 
 @mcp.tool(name="generate_cover_letter")
-def generate_cover_letter_tool(candidate_id: str, job_id: str, tone: str = "professional") -> CoverLetter:
-    """Generate a tailored cover letter, email subject, and LinkedIn pitch for a candidate and job."""
-    raw = generate_cover_letter(candidate_id=candidate_id, job_id=job_id, tone=tone)
+def generate_cover_letter_tool(
+    candidate_id: str,
+    job_id: str,
+    tone: str = "professional",
+    language: str = "fr",
+) -> CoverLetter:
+    """Generate a tailored cover letter, email subject, and LinkedIn pitch for a candidate and job (supports French & English)."""
+    raw = generate_cover_letter(candidate_id=candidate_id, job_id=job_id, tone=tone, language=language)
     return CoverLetter.model_validate(raw)
+

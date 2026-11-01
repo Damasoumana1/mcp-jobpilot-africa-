@@ -48,3 +48,25 @@ def test_create_application_invalid_foreign_keys():
 def test_update_nonexistent_application():
     with pytest.raises(ValueError, match="Application 'INVALID' not found"):
         update_application_status("INVALID", "applied")
+
+
+def test_generate_cover_letter_bilingual():
+    from jobpilot.services.application_service import generate_cover_letter
+    from jobpilot.tools.application_tools import generate_cover_letter_tool
+
+    # 1. French Generation
+    res_fr = generate_cover_letter("DAMA-001", "JOB-001", language="fr")
+    assert "Candidature" in res_fr["email_subject"]
+    assert "Madame, Monsieur" in res_fr["cover_letter"]
+    assert "Bonjour" in res_fr["linkedin_pitch"]
+
+    # 2. English Generation
+    res_en = generate_cover_letter("DAMA-001", "JOB-001", language="en")
+    assert "Application" in res_en["email_subject"]
+    assert "Dear Hiring Team" in res_en["cover_letter"]
+    assert "Hi!" in res_en["linkedin_pitch"]
+
+    # 3. FastMCP tool with language
+    tool_res = generate_cover_letter_tool("DAMA-001", "JOB-001", language="en")
+    assert "Application" in tool_res.email_subject
+

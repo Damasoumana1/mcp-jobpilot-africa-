@@ -1,13 +1,16 @@
 import React from 'react';
-import { User, MapPin, Mail, Globe, Briefcase, GraduationCap, Award, Sparkles } from 'lucide-react';
+import { User, MapPin, Mail, Globe, Briefcase, GraduationCap, Award, Sparkles, FileText } from 'lucide-react';
 import type { Candidate } from '../types';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface ProfileTabProps {
   candidate: Candidate;
   onExploreJobs: () => void;
+  onOpenResumeParser?: () => void;
 }
 
-export const ProfileTab: React.FC<ProfileTabProps> = ({ candidate, onExploreJobs }) => {
+export const ProfileTab: React.FC<ProfileTabProps> = ({ candidate, onExploreJobs, onOpenResumeParser }) => {
+  const { t } = useLanguage();
   return (
     <div className="space-y-6">
 
@@ -28,7 +31,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({ candidate, onExploreJobs
                   {candidate.name}
                 </h2>
                 <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                  {candidate.available ? '● Disponible' : 'En poste'}
+                  {candidate.available ? t.profile.available : t.profile.busy}
                 </span>
               </div>
               <p className="text-sm font-medium text-emerald-400">
@@ -39,7 +42,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({ candidate, onExploreJobs
                   <MapPin className="w-3.5 h-3.5 text-slate-500" /> {candidate.country}
                 </span>
                 <span className="flex items-center gap-1">
-                  <Briefcase className="w-3.5 h-3.5 text-slate-500" /> {candidate.experience_years} an(s) d'expérience
+                  <Briefcase className="w-3.5 h-3.5 text-slate-500" /> {candidate.experience_years} {t.profile.experience_years}
                 </span>
                 <span className="flex items-center gap-1">
                   <Mail className="w-3.5 h-3.5 text-slate-500" /> {candidate.email}
@@ -48,13 +51,25 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({ candidate, onExploreJobs
             </div>
           </div>
 
-          <button
-            onClick={onExploreJobs}
-            className="flex items-center space-x-2 px-5 py-2.5 rounded-xl text-sm font-semibold bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-lg shadow-emerald-500/20 transition-all shrink-0"
-          >
-            <Sparkles className="w-4 h-4" />
-            <span>Voir les offres adaptées</span>
-          </button>
+          <div className="flex flex-wrap items-center gap-3 shrink-0">
+            {onOpenResumeParser && (
+              <button
+                onClick={onOpenResumeParser}
+                className="flex items-center space-x-2 px-4 py-2.5 rounded-xl text-sm font-semibold bg-slate-900/90 hover:bg-slate-800 text-emerald-400 border border-slate-700 hover:border-emerald-500/50 transition-all shadow-md"
+              >
+                <FileText className="w-4 h-4 text-emerald-400" />
+                <span>{t.profile.scan_cv}</span>
+              </button>
+            )}
+
+            <button
+              onClick={onExploreJobs}
+              className="flex items-center space-x-2 px-5 py-2.5 rounded-xl text-sm font-semibold bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-lg shadow-emerald-500/20 transition-all"
+            >
+              <Sparkles className="w-4 h-4" />
+              <span>{t.profile.explore_jobs}</span>
+            </button>
+          </div>
 
         </div>
       </div>
@@ -66,7 +81,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({ candidate, onExploreJobs
         <div className="md:col-span-2 bg-[#0d1424] border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
           <div className="flex items-center space-x-2 text-white font-bold font-display text-base">
             <Award className="w-5 h-5 text-emerald-400" />
-            <span>Compétences Techniques & Outils Maîtrisés</span>
+            <span>{t.profile.skills_title}</span>
           </div>
           <div className="flex flex-wrap gap-2 pt-2">
             {candidate.skills.map((skill, index) => (
@@ -82,7 +97,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({ candidate, onExploreJobs
           {candidate.bio && (
             <div className="pt-4 border-t border-slate-800 space-y-2">
               <span className="text-xs uppercase font-semibold text-slate-400 tracking-wider">
-                Pitch Professionnel
+                {t.profile.pitch_title}
               </span>
               <p className="text-sm text-slate-300 leading-relaxed">
                 {candidate.bio}
