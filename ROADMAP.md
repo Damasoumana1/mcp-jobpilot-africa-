@@ -6,6 +6,11 @@ This roadmap outlines the planned milestones, upcoming features, and areas where
 
 ## 🎯 Vision
 
+The platform's scope is the whole African continent, using all 55 AU members and
+five regions as its discovery reference. Demo inventory does not define product
+coverage. Regional sourcing, eligibility and additional languages are tracked in
+[the continental direction](docs/continental-coverage.md).
+
 To build the most accessible, AI-powered career accelerator for African early-career tech talent, powered by the **Model Context Protocol (MCP)**.
 
 ---

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from jobpilot.database.connection import get_connection
+from jobpilot.geography import country_key
 
 
 def match_candidate_to_job(candidate_id: str, job_id: str) -> dict:
@@ -39,6 +40,12 @@ def match_candidate_to_job(candidate_id: str, job_id: str) -> dict:
     candidate_skills = {row["name"] for row in cand_skill_rows}
     job_skills_dict = {row["name"]: bool(row["is_required"]) for row in job_skill_rows}
 
+    cand_country = country_key(candidate["country"])
+    job_country = country_key(job["country"])
+    is_remote = bool(job["remote_allowed"]) or job_country == "remote"
+    relocation_needed = bool(not is_remote and cand_country and job_country and cand_country != job_country)
+    remote_compatible = not relocation_needed
+
     # Fallback if no skills are defined in job_skills
     if not job_skills_dict:
         return {
@@ -48,8 +55,8 @@ def match_candidate_to_job(candidate_id: str, job_id: str) -> dict:
             "matching_skills": sorted(candidate_skills),
             "missing_skills": [],
             "recommendations": ["Aucune compétence préalable exigée pour cette opportunité."],
-            "relocation_needed": False,
-            "remote_compatible": True,
+            "relocation_needed": relocation_needed,
+            "remote_compatible": remote_compatible,
             "mandatory_skills_met": True,
         }
 
@@ -66,16 +73,6 @@ def match_candidate_to_job(candidate_id: str, job_id: str) -> dict:
     match_score = int(round((earned_points / total_points) * 100))
 
     # Location & Remote compatibility check
-    cand_country = (candidate["country"] or "").strip().lower()
-    job_country = (job["country"] or "").strip().lower()
-    is_remote = bool(job["remote_allowed"]) or job_country == "remote"
-
-    relocation_needed = False
-    remote_compatible = True
-    if not is_remote and cand_country and job_country and cand_country != job_country:
-        relocation_needed = True
-        remote_compatible = False
-
     recommendations: list[str] = []
     if relocation_needed:
         recommendations.append(f"Poste sur site situé en/au {job['country']}. Une mobilité ou relocalisation est requise.")

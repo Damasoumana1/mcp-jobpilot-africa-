@@ -4,6 +4,7 @@ import re
 from typing import Any
 
 from jobpilot.services.candidate_service import get_candidate, upsert_candidate
+from jobpilot.geography import detect_country
 
 # Comprehensive tech skills dictionary categorized for African & global tech markets
 TECH_SKILLS_CATALOG = [
@@ -33,13 +34,6 @@ TECH_SKILLS_CATALOG = [
 COMMON_LANGUAGES = [
     "Français", "French", "Anglais", "English", "Arabe", "Arabic",
     "Wolof", "Swahili", "Portugais", "Portuguese", "Yoruba", "Igbo", "Hausa"
-]
-
-AFRICAN_COUNTRIES = [
-    "Sénégal", "Senegal", "Côte d'Ivoire", "Ivory Coast", "Nigéria", "Nigeria",
-    "Kenya", "Rwanda", "Ghana", "Cameroun", "Cameroon", "Bénin", "Benin",
-    "Togo", "Maroc", "Morocco", "Tunisie", "Tunisia", "Égypte", "Egypt",
-    "Afrique du Sud", "South Africa", "Burkina Faso", "Mali", "Guinée", "RDC"
 ]
 
 
@@ -82,11 +76,7 @@ def extract_contact_info(text: str) -> dict[str, str | None]:
     phone = phone_match.group(0).strip() if phone_match else None
 
     # Country
-    detected_country = None
-    for country in AFRICAN_COUNTRIES:
-        if re.search(rf"\b{re.escape(country)}\b", text, re.IGNORECASE):
-            detected_country = country
-            break
+    detected_country = detect_country(text)
 
     return {
         "email": email,

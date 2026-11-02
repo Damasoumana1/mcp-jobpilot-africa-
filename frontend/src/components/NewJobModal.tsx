@@ -1,232 +1,69 @@
-import React, { useState } from 'react';
-import { X, Plus, Sparkles, Building2, MapPin, Globe } from 'lucide-react';
+﻿import React, { useState } from 'react';
+import { X, Plus } from 'lucide-react';
 import type { Job } from '../types';
+import { useLanguage } from '../i18n/LanguageContext';
+import { useGeography } from '../geography';
 
-interface NewJobModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onJobCreated: (job: Job) => void;
-}
-
+interface NewJobModalProps { isOpen: boolean; onClose: () => void; onJobCreated: (job: Job) => void }
+const emptyForm = { title: '', company: '', country: '', remote_allowed: false, skills: '', description: '', application_url: '' };
+const fieldStyle = 'w-full mt-1 px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-emerald-500';
 export const NewJobModal: React.FC<NewJobModalProps> = ({ isOpen, onClose, onJobCreated }) => {
-  const [formData, setFormData] = useState({
-    title: '',
-    company: '',
-    location: 'Dakar, Sénégal',
-    remote: false,
-    required_skills: '',
-    nice_to_have: '',
-    description: '',
-    application_url: '',
-  });
+  const { lang } = useLanguage();
+  const geography = useGeography();
+  const [form, setForm] = useState(emptyForm);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
+  const text = (fr: string, en: string) => lang === 'fr' ? fr : en;
   if (!isOpen) return null;
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setLoading(true); setError(null);
     try {
-      const payload = {
-        title: formData.title.trim(),
-        company: formData.company.trim(),
-        location: formData.location.trim(),
-        remote: formData.remote,
-        required_skills: formData.required_skills
-          .split(',')
-          .map((s) => s.trim())
-          .filter(Boolean),
-        nice_to_have: formData.nice_to_have
-          .split(',')
-          .map((s) => s.trim())
-          .filter(Boolean),
-        description: formData.description.trim(),
-        application_url: formData.application_url.trim() || undefined,
-      };
-
-      const res = await fetch('/api/jobs', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.error || `Erreur serveur (${res.status})`);
+      const country = geography.countries.find(country => country.code === form.country);
+      if (!country) throw new Error(text('Sélectionnez un pays.', 'Select a country.'));
+      const skills = form.skills.split(',').map(skill => skill.trim()).filter(Boolean);
+      if (!skills.length) throw new Error(text('Indiquez au moins une compétence.', 'Enter at least one skill.'));
+      if (!form.title.trim() || !form.company.trim() || !form.description.trim()) throw new Error(text('Complétez les champs obligatoires.', 'Complete the required fields.'));
+      const response = await fetch('/api/jobs', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
+        id: `JOB-${crypto.randomUUID()}`, title: form.title.trim(), company: form.company.trim(), country: country.en,
+        remote_allowed: form.remote_allowed, skills, description: form.description.trim(), application_url: form.application_url.trim() || null,
+      }) });
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(typeof data.error === 'string' ? data.error : text(`Publication impossible (${response.status}).`, `Unable to publish (${response.status}).`));
       }
-
-      const createdJob = await res.json();
-      onJobCreated(createdJob);
-      onClose();
-    } catch (err: any) {
-      setError(err.message || 'Impossible de créer le job');
-    } finally {
-      setLoading(false);
-    }
+      onJobCreated(await response.json()); setForm(emptyForm); onClose();
+    } catch (error) { setError(error instanceof Error ? error.message : text('Publication impossible.', 'Unable to publish.')); }
+    finally { setLoading(false); }
   };
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-      <div className="bg-[#0f172a] border border-slate-700/80 rounded-2xl max-w-xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
-        
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-900/60">
-          <div className="flex items-center space-x-2">
-            <Plus className="w-5 h-5 text-emerald-400" />
-            <h2 className="text-lg font-bold font-display text-white">
-              Publier une Offre Tech
-            </h2>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
+  return <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+    <section role="dialog" aria-modal="true" aria-labelledby="publish-title" className="bg-[#0f172a] border border-slate-700 rounded-2xl max-w-xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+      <header className="flex items-center justify-between px-6 py-4 border-b border-slate-800">
+        <h2 id="publish-title" className="text-lg font-bold text-white flex items-center gap-2"><Plus className="w-5 h-5 text-emerald-400" />{text('Publier une offre en Afrique', 'Publish a job in Africa')}</h2>
+        <button type="button" aria-label={text('Fermer', 'Close')} disabled={loading} onClick={onClose} className="p-2 text-slate-300 hover:text-white"><X className="w-5 h-5" /></button>
+      </header>
+      <form onSubmit={handleSubmit} className="p-6 space-y-4 text-sm text-slate-300">
+        {error && <p role="alert" className="p-3 bg-rose-500/10 text-rose-300 rounded-lg">{error}</p>}
+        <label className="block">{text('Intitulé du poste *', 'Job title *')}<input required autoFocus value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} className={fieldStyle} /></label>
+        <label className="block">{text('Entreprise *', 'Company *')}<input required value={form.company} onChange={e => setForm({ ...form, company: e.target.value })} className={fieldStyle} /></label>
+        <label className="block">{text('Pays du poste *', 'Job country *')}
+          <select required disabled={geography.loading || geography.error} value={form.country} onChange={e => setForm({ ...form, country: e.target.value })} className={fieldStyle}>
+            <option value="">{text('Choisir un pays', 'Choose a country')}</option>
+            {[...geography.countries].sort((a, b) => a[lang].localeCompare(b[lang], lang)).map(country => <option key={country.code} value={country.code}>{country[lang]}</option>)}
+          </select>
+        </label>
+        {geography.loading && <p role="status">{text('Chargement des pays…', 'Loading countries…')}</p>}
+        {geography.error && <p role="alert">{text('Liste des pays indisponible.', 'Country list unavailable.')} <button type="button" onClick={geography.retry} className="text-emerald-400 underline">{text('Réessayer', 'Retry')}</button></p>}
+        <label className="flex items-center gap-2"><input type="checkbox" checked={form.remote_allowed} onChange={e => setForm({ ...form, remote_allowed: e.target.checked })} />{text('Télétravail autorisé', 'Remote work allowed')}</label>
+        <p className="text-xs text-slate-400">{text('Précisez dans la description les pays éligibles au télétravail.', 'Specify eligible remote work countries in the description.')}</p>
+        <label className="block">{text('Compétences requises, séparées par des virgules *', 'Required skills, comma separated *')}<input required value={form.skills} onChange={e => setForm({ ...form, skills: e.target.value })} placeholder="Python, React, SQL" className={fieldStyle} /></label>
+        <label className="block">{text('Description et responsabilités *', 'Description and responsibilities *')}<textarea required rows={4} value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} className={fieldStyle} /></label>
+        <label className="block">{text('Lien de candidature (facultatif)', 'Application link (optional)')}<input type="url" value={form.application_url} onChange={e => setForm({ ...form, application_url: e.target.value })} placeholder="https://…" className={fieldStyle} /></label>
+        <div className="pt-4 border-t border-slate-800 flex justify-end gap-3">
+          <button type="button" disabled={loading} onClick={onClose} className="px-4 py-2 bg-slate-800 rounded-lg">{text('Annuler', 'Cancel')}</button>
+          <button type="submit" disabled={loading || geography.loading || geography.error} className="px-5 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold rounded-lg disabled:opacity-50">{loading ? text('Publication…', 'Publishing…') : text('Publier l’offre', 'Publish job')}</button>
         </div>
-
-        {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-4 text-sm">
-          {error && (
-            <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-lg text-rose-400 text-xs">
-              {error}
-            </div>
-          )}
-
-          <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">
-              Intitulé du poste *
-            </label>
-            <input
-              type="text"
-              required
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              placeholder="ex: Lead Backend Engineer (FastAPI/Go)"
-              className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1 flex items-center gap-1">
-                <Building2 className="w-3.5 h-3.5" /> Entreprise *
-              </label>
-              <input
-                type="text"
-                required
-                value={formData.company}
-                onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                placeholder="ex: Wave Mobile Money"
-                className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1 flex items-center gap-1">
-                <MapPin className="w-3.5 h-3.5" /> Localisation *
-              </label>
-              <input
-                type="text"
-                required
-                value={formData.location}
-                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                placeholder="ex: Abidjan, Côte d'Ivoire"
-                className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
-              />
-            </div>
-          </div>
-
-          <div className="flex items-center space-x-2 pt-1">
-            <input
-              type="checkbox"
-              id="remote-check"
-              checked={formData.remote}
-              onChange={(e) => setFormData({ ...formData, remote: e.target.checked })}
-              className="w-4 h-4 rounded border-slate-700 text-emerald-500 focus:ring-emerald-400 focus:ring-offset-0 bg-slate-900"
-            />
-            <label htmlFor="remote-check" className="text-sm text-slate-300 flex items-center gap-1 cursor-pointer">
-              <Globe className="w-4 h-4 text-emerald-400" /> Télétravail autorisé / 100% Remote
-            </label>
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">
-              Compétences requises (séparées par des virgules) *
-            </label>
-            <input
-              type="text"
-              required
-              value={formData.required_skills}
-              onChange={(e) => setFormData({ ...formData, required_skills: e.target.value })}
-              placeholder="ex: Python, FastAPI, Docker, PostgreSQL"
-              className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">
-              Compétences secondaires (Nice to have)
-            </label>
-            <input
-              type="text"
-              value={formData.nice_to_have}
-              onChange={(e) => setFormData({ ...formData, nice_to_have: e.target.value })}
-              placeholder="ex: Kubernetes, Redis, FinTech APIs"
-              className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">
-              Description du poste & responsabilités *
-            </label>
-            <textarea
-              required
-              rows={3}
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Missions, stack technique, impact attendu..."
-              className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">
-              Lien de candidature (Optionnel)
-            </label>
-            <input
-              type="url"
-              value={formData.application_url}
-              onChange={(e) => setFormData({ ...formData, application_url: e.target.value })}
-              placeholder="https://..."
-              className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
-            />
-          </div>
-
-          {/* Footer Actions */}
-          <div className="pt-4 border-t border-slate-800 flex items-center justify-end space-x-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-sm font-medium transition-colors"
-            >
-              Annuler
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex items-center space-x-2 px-5 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-semibold rounded-lg text-sm shadow-lg shadow-emerald-500/20 transition-all disabled:opacity-50"
-            >
-              <Sparkles className="w-4 h-4" />
-              <span>{loading ? 'Publication...' : 'Publier le Job'}</span>
-            </button>
-          </div>
-        </form>
-
-      </div>
-    </div>
-  );
+      </form>
+    </section>
+  </div>;
 };

@@ -8,6 +8,10 @@ from starlette.requests import Request
 from starlette.responses import HTMLResponse, JSONResponse, Response
 from starlette.routing import Mount, Route
 from starlette.staticfiles import StaticFiles
+from pydantic import ValidationError
+
+from jobpilot.models.job_analysis import JobAnalysisRequest
+from jobpilot.services.job_analysis_service import analyze_job, list_job_analyses
 
 from jobpilot.database.connection import init_db
 from jobpilot.database.seed import seed_demo_data
@@ -22,9 +26,31 @@ from jobpilot.services.interview_service import generate_interview_questions, ge
 from jobpilot.services.job_service import create_job, get_job, search_jobs
 from jobpilot.services.matching_service import match_candidate_to_job
 from jobpilot.services.resume_service import parse_resume
+from jobpilot.geography import COUNTRIES, REGIONS
 
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
+
+
+async def api_job_analysis(request: Request) -> JSONResponse:
+    if request.method == "GET":
+        candidate_id = request.query_params.get("candidate_id", "").strip()
+        if not candidate_id:
+            return JSONResponse({"error": "candidate_id is required"}, status_code=400)
+        try:
+            return JSONResponse([r.model_dump(mode="json") for r in list_job_analyses(candidate_id)])
+        except ValueError as exc:
+            return JSONResponse({"error": str(exc)}, status_code=404)
+    try:
+        payload = await request.json()
+        analysis_request = JobAnalysisRequest.model_validate(payload)
+    except (ValueError, ValidationError):
+        return JSONResponse({"error": "Invalid request: candidate_id and job_text (30–20000 characters) are required; source_url must use HTTPS."}, status_code=400)
+    try:
+        report = analyze_job(analysis_request, save=request.url.path == "/api/job-analyses")
+        return JSONResponse(report.model_dump(mode="json"), status_code=201 if report.id else 200)
+    except ValueError as exc:
+        return JSONResponse({"error": str(exc)}, status_code=404)
 
 
 async def index(request: Request) -> Response:
@@ -42,7 +68,10 @@ async def api_jobs(request: Request) -> JSONResponse:
         keywords_param = request.query_params.get("keywords")
         keywords = [k.strip() for k in keywords_param.split(",") if k.strip()] if keywords_param else None
 
-        jobs = search_jobs(keywords=keywords, country=country, remote_only=remote_only)
+        region = request.query_params.get("region") or None
+        if region and region not in {r["id"] for r in REGIONS}:
+            return JSONResponse({"error": "Unknown region"}, status_code=400)
+        jobs = search_jobs(keywords=keywords, country=country, remote_only=remote_only, region=region)
         return JSONResponse(jobs)
     elif request.method == "POST":
         payload = await request.json()
@@ -263,7 +292,14 @@ async def api_copilot_chat(request: Request) -> JSONResponse:
     })
 
 
+async def api_geography(request: Request) -> JSONResponse:
+    return JSONResponse({"countries": COUNTRIES, "regions": REGIONS})
+
+
 routes = [
+    Route("/api/geography", endpoint=api_geography, methods=["GET"]),
+    Route("/api/jobs/analyze", endpoint=api_job_analysis, methods=["POST"]),
+    Route("/api/job-analyses", endpoint=api_job_analysis, methods=["GET", "POST"]),
     Route("/", endpoint=index, methods=["GET"]),
     Route("/api/jobs", endpoint=api_jobs, methods=["GET", "POST"]),
     Route("/api/jobs/{job_id}", endpoint=api_job_detail, methods=["GET"]),
@@ -278,6 +314,7 @@ routes = [
     Route("/api/interview/checklist", endpoint=api_interview_checklist, methods=["POST"]),
     Route("/api/copilot/chat", endpoint=api_copilot_chat, methods=["POST"]),
     Mount("/static", app=StaticFiles(directory=str(STATIC_DIR)), name="static"),
+    Mount("/assets", app=StaticFiles(directory=str(STATIC_DIR / "assets")), name="assets"),
 ]
 
 app = Starlette(routes=routes)

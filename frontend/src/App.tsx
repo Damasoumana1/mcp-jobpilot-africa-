@@ -127,7 +127,9 @@ export const App: React.FC = () => {
 
       const newApp = await res.json();
       setApplications((prev) => [newApp, ...prev]);
-      showToast('Candidature enregistrée et transmise ! Suivi actif.');
+      showToast(lang === 'fr'
+        ? 'Suivi enregistré dans JobPilot. Finalisez votre candidature auprès de l’employeur.'
+        : 'Tracking saved in JobPilot. Complete your application with the employer.');
     } catch (err: any) {
       showToast(err.message || 'Erreur de postulation', 'error');
     }
@@ -214,6 +216,7 @@ export const App: React.FC = () => {
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {activeTab === 'jobs' && (
           <JobsTab
+            candidateId={candidate.id}
             jobs={jobs}
             onOpenNewJobModal={() => setIsNewJobOpen(true)}
             onMatchJob={handleMatchJob}

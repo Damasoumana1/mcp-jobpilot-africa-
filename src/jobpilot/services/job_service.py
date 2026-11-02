@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from jobpilot.database.connection import get_connection
+from jobpilot.geography import REGIONS, country_key, resolve_country
 
 
 def _get_skills_for_job(conn, job_id: str) -> list[str]:
@@ -21,8 +22,11 @@ def search_jobs(
     country: str | None = None,
     remote_only: bool = False,
     min_duration_months: int | None = None,
+    region: str | None = None,
 ) -> list[dict]:
-    """Search jobs from the local SQLite database."""
+    """Search local jobs using country codes, FR/EN aliases and AU regions."""
+    if region and region not in {r["id"] for r in REGIONS}:
+        raise ValueError(f"Unknown region '{region}'")
     conn = get_connection()
     try:
         query = """
@@ -32,7 +36,7 @@ def search_jobs(
         """
         params: list[object] = []
 
-        if country:
+        if country and resolve_country(country) is None:
             query += " AND LOWER(j.country) = LOWER(?) "
             params.append(country)
 
@@ -55,6 +59,12 @@ def search_jobs(
         results = []
         for row in rows:
             data = dict(row)
+            if country and country_key(data["country"]) != country_key(country):
+                continue
+            if region:
+                resolved = resolve_country(data["country"])
+                if resolved is None or resolved["region"] != region:
+                    continue
             data["skills"] = _get_skills_for_job(conn, data["id"])
             results.append(data)
         return results

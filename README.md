@@ -15,6 +15,10 @@
 
 ## 🎯 Features
 
+**Continental scope:** JobPilot Africa supports discovery across all 55 African Union members and five regions, independently of the countries represented in its demo jobs. Country aliases work across French and English. See [continental coverage and direction](docs/continental-coverage.md).
+
+- **Pasted offer analysis**: Compare an external job posting with a candidate's skills, review quoted evidence, and save reports locally. See [scope and API](docs/offer-analysis.md).
+
 - **Job Discovery**: Search tech opportunities across Africa by keyword, country, remote allowance, and contract duration.
 - **Skill Matching & Gap Analysis**: Match candidate profiles against job prerequisites, compute match scores (0–100%), and receive targeted learning recommendations.
 - **Application Tracking**: Create and maintain candidate job applications with custom notes and status lifecycles (`saved`, `applied`, `interview`, `offer`, `rejected`).
@@ -115,12 +119,15 @@ Add the following to your `claude_desktop_config.json`:
 
 ---
 
-## 🛠️ MCP Tools Overview (13 Tools)
+## 🛠️ MCP Tools Overview (16 Tools)
 
 | Tool Name | Parameters | Description |
 | :--- | :--- | :--- |
-| `search_jobs` | `keywords`, `country`, `remote_only`, `min_duration_months` | Search tech opportunities with filtering. |
+| `get_geography` | none | All 55 AU members, country aliases and five regions. |
+| `search_jobs` | `keywords`, `country`, `region`, `remote_only`, `min_duration_months` | Search opportunities using country names/codes and five African regions. |
 | `get_job` | `job_id` | Retrieve complete job details and required skills. |
+| `analyze_job_offer` | `candidate_id`, `job_text`, `title`, `company`, `source_url`, `save` | Explain skill coverage from pasted text and optionally save the report. |
+| `list_job_analyses` | `candidate_id` | Retrieve the latest saved offer reports. |
 | `create_job` | `job_id`, `title`, `company`, `skills`, ... | Register or update a job opportunity in the database. |
 | `get_candidate` | `candidate_id` | Retrieve full candidate profile including skills. |
 | `register_candidate` | `candidate_id`, `full_name`, `country`, `skills`, ... | Create or update candidate profile and skills. |

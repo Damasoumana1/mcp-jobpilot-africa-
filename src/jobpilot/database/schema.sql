@@ -1,3 +1,11 @@
+CREATE TABLE IF NOT EXISTS job_analyses (
+    id TEXT PRIMARY KEY,
+    candidate_id TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    report_json TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_job_analyses_candidate ON job_analyses(candidate_id, created_at);
+
 CREATE TABLE IF NOT EXISTS candidates (
     id TEXT PRIMARY KEY,
     full_name TEXT NOT NULL,
