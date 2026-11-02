@@ -6,6 +6,17 @@ from jobpilot.models.job_analysis import JobAnalysis, JobAnalysisRequest
 from jobpilot.services.job_analysis_service import analyze_job, list_job_analyses
 from jobpilot.services.job_service import get_job, search_jobs
 from jobpilot.geography import COUNTRIES, REGIONS
+from jobpilot.services.source_service import GreenhouseRequest, import_greenhouse
+
+
+@mcp.tool(name="import_greenhouse_jobs")
+def import_greenhouse_jobs_tool(board: str, company: str, save: bool = False) -> dict:
+    """Preview African-country postings from a public Greenhouse board; save explicitly.
+
+    Only country names in the location are used. Remote-only/unknown locations
+    are skipped. No application is submitted and closures are not inferred.
+    """
+    return import_greenhouse(GreenhouseRequest(board=board, company=company, save=save))
 
 
 @mcp.tool(name="get_geography")

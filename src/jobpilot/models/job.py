@@ -18,3 +18,7 @@ class Job(BaseModel):
     application_url: str | None = Field(default=None, description="Direct URL to apply")
     closing_date: str | None = Field(default=None, description="Application deadline date")
     skills: list[str] = Field(default_factory=list, description="List of required or relevant skills")
+    source: str | None = None
+    source_url: str | None = None
+    source_location: str | None = None
+    last_seen_at: str | None = None

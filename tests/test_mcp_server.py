@@ -18,6 +18,7 @@ async def test_mcp_server_lists_all_tools():
         "analyze_job_offer",
         "list_job_analyses",
         "get_geography",
+        "import_greenhouse_jobs",
         # Candidate profiles & matching
         "get_candidate",
         "register_candidate",

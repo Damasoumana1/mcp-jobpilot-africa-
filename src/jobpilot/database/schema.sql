@@ -4,6 +4,17 @@ CREATE TABLE IF NOT EXISTS job_analyses (
     created_at TEXT NOT NULL,
     report_json TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS job_sources (
+    job_id TEXT PRIMARY KEY,
+    provider TEXT NOT NULL,
+    board TEXT NOT NULL,
+    external_id TEXT NOT NULL,
+    source_url TEXT NOT NULL,
+    source_location TEXT NOT NULL,
+    first_seen_at TEXT NOT NULL,
+    last_seen_at TEXT NOT NULL,
+    UNIQUE(provider, board, external_id)
+);
 CREATE INDEX IF NOT EXISTS idx_job_analyses_candidate ON job_analyses(candidate_id, created_at);
 
 CREATE TABLE IF NOT EXISTS candidates (

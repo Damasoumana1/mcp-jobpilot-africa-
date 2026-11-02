@@ -30,8 +30,10 @@ def search_jobs(
     conn = get_connection()
     try:
         query = """
-            SELECT j.*
+            SELECT j.*, provenance.provider AS source, provenance.source_url,
+                   provenance.source_location, provenance.last_seen_at
             FROM jobs j
+            LEFT JOIN job_sources provenance ON provenance.job_id = j.id
             WHERE 1 = 1
         """
         params: list[object] = []
@@ -76,7 +78,9 @@ def get_job(job_id: str) -> dict | None:
     """Return the details of a single job."""
     conn = get_connection()
     try:
-        row = conn.execute("SELECT * FROM jobs WHERE id = ?", (job_id,)).fetchone()
+        row = conn.execute("""SELECT j.*, p.provider AS source, p.source_url,
+            p.source_location, p.last_seen_at FROM jobs j
+            LEFT JOIN job_sources p ON p.job_id = j.id WHERE j.id = ?""", (job_id,)).fetchone()
         if not row:
             return None
         data = dict(row)

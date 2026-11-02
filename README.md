@@ -119,11 +119,12 @@ Add the following to your `claude_desktop_config.json`:
 
 ---
 
-## 🛠️ MCP Tools Overview (16 Tools)
+## 🛠️ MCP Tools Overview (17 Tools)
 
 | Tool Name | Parameters | Description |
 | :--- | :--- | :--- |
 | `get_geography` | none | All 55 AU members, country aliases and five regions. |
+| `import_greenhouse_jobs` | `board`, `company`, `save` | Preview or import real postings with source metadata. See [job sources](docs/job-sources.md). |
 | `search_jobs` | `keywords`, `country`, `region`, `remote_only`, `min_duration_months` | Search opportunities using country names/codes and five African regions. |
 | `get_job` | `job_id` | Retrieve complete job details and required skills. |
 | `analyze_job_offer` | `candidate_id`, `job_text`, `title`, `company`, `source_url`, `save` | Explain skill coverage from pasted text and optionally save the report. |

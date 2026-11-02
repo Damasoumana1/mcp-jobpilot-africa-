@@ -27,6 +27,8 @@ from jobpilot.services.job_service import create_job, get_job, search_jobs
 from jobpilot.services.matching_service import match_candidate_to_job
 from jobpilot.services.resume_service import parse_resume
 from jobpilot.geography import COUNTRIES, REGIONS
+from jobpilot.services.source_service import GreenhouseRequest, import_greenhouse
+from starlette.concurrency import run_in_threadpool
 
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
@@ -296,7 +298,20 @@ async def api_geography(request: Request) -> JSONResponse:
     return JSONResponse({"countries": COUNTRIES, "regions": REGIONS})
 
 
+async def api_greenhouse_import(request: Request) -> JSONResponse:
+    try:
+        payload = GreenhouseRequest.model_validate(await request.json())
+    except ValueError:
+        return JSONResponse({"error": "Invalid board, company or save flag"}, status_code=400)
+    try:
+        result = await run_in_threadpool(import_greenhouse, payload)
+        return JSONResponse(result)
+    except ValueError as exc:
+        return JSONResponse({"error": str(exc)}, status_code=502)
+
+
 routes = [
+    Route("/api/sources/greenhouse/import", endpoint=api_greenhouse_import, methods=["POST"]),
     Route("/api/geography", endpoint=api_geography, methods=["GET"]),
     Route("/api/jobs/analyze", endpoint=api_job_analysis, methods=["POST"]),
     Route("/api/job-analyses", endpoint=api_job_analysis, methods=["GET", "POST"]),
