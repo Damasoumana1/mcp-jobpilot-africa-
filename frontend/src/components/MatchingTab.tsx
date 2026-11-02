@@ -45,8 +45,13 @@ export const MatchingTab: React.FC<MatchingTabProps> = ({
         throw new Error(`Erreur lors du calcul du match (${res.status})`);
       }
 
-      const data: MatchResult = await res.json();
-      setMatchResult(data);
+      const data = await res.json();
+      setMatchResult({
+        ...data,
+        score: data.match_score,
+        matched_skills: data.matching_skills,
+        recommendation: data.recommendations.join(' '),
+      });
     } catch (err: any) {
       setError(err.message || 'Impossible de calculer le match');
     } finally {
@@ -130,7 +135,7 @@ export const MatchingTab: React.FC<MatchingTabProps> = ({
       )}
 
       {/* Results View */}
-      {matchResult && selectedJob && (
+      {matchResult && selectedJob && matchResult.job_id === selectedJob.id && (
         <div className="space-y-6 animate-fadeIn">
           
           {/* Main Score Banner */}

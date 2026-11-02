@@ -5,6 +5,7 @@ interface CopilotChatProps {
   isOpen: boolean;
   onClose: () => void;
   candidateName?: string;
+  candidateId: string;
 }
 
 interface Message {
@@ -12,7 +13,7 @@ interface Message {
   content: string;
 }
 
-export const CopilotChat: React.FC<CopilotChatProps> = ({ isOpen, onClose, candidateName = 'Dama Soumana' }) => {
+export const CopilotChat: React.FC<CopilotChatProps> = ({ isOpen, onClose, candidateId, candidateName = '' }) => {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
@@ -52,7 +53,7 @@ export const CopilotChat: React.FC<CopilotChatProps> = ({ isOpen, onClose, candi
       const res = await fetch('/api/copilot/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text, candidate_id: 'DAMA-001' }),
+        body: JSON.stringify({ message: text, candidate_id: candidateId }),
       });
 
       if (!res.ok) {

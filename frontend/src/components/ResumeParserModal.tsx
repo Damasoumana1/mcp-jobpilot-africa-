@@ -133,15 +133,13 @@ export const ResumeParserModal: React.FC<ResumeParserModalProps> = ({
       const data = await res.json();
       const updated: Candidate = {
         id: candidateId,
-        name: data.full_name || 'Dama Soumana',
+        name: data.full_name || candidateId,
         email: data.email,
         country: data.country,
-        desired_role: 'Fullstack Developer / AI Apprentice',
         skills: data.skills || [],
-        experience_years: data.experience_years || 2,
+        experience_years: data.experience_years,
         education: data.education,
         bio: data.summary,
-        available: true,
       };
 
       onProfileUpdated(updated);

@@ -62,7 +62,7 @@ def get_application_checklist(candidate_id: str, job_id: str) -> list[dict]:
             {"task": f"Review your {job['title']} experience and examples", "priority": "high", "completed": False},
             {"task": "Prepare your strongest project demonstrations", "priority": "high", "completed": False},
             {"task": "Review the skills required for this role and identify gaps", "priority": "medium", "completed": False},
-            {"task": f"Confirm your availability date: {candidate['availability_date']}", "priority": "medium", "completed": False},
+            {"task": f"Confirm your availability date: {candidate['availability_date']}" if candidate['availability_date'] else "Set your availability date", "priority": "medium", "completed": False},
         ]
         return tasks
     finally:

@@ -11,6 +11,7 @@ from starlette.staticfiles import StaticFiles
 from pydantic import ValidationError
 
 from jobpilot.models.job_analysis import JobAnalysisRequest
+from jobpilot.models.web_requests import CandidateRequest, InterviewRequest
 from jobpilot.services.job_analysis_service import analyze_job, list_job_analyses
 
 from jobpilot.database.connection import init_db
@@ -112,19 +113,12 @@ async def api_candidates(request: Request) -> JSONResponse:
         candidates = list_candidates()
         return JSONResponse(candidates)
     elif request.method == "POST":
-        payload = await request.json()
-        candidate = upsert_candidate(
-            candidate_id=payload["id"],
-            full_name=payload["full_name"],
-            country=payload["country"],
-            city=payload.get("city"),
-            email=payload.get("email"),
-            availability_date=payload.get("availability_date"),
-            languages=payload.get("languages"),
-            education=payload.get("education"),
-            summary=payload.get("summary"),
-            skills=payload.get("skills", []),
-        )
+        try:
+            payload = CandidateRequest.model_validate(await request.json())
+        except ValueError:
+            return JSONResponse({"error": "Valid id, full_name, country and skills are required"}, status_code=400)
+        fields = payload.model_dump(exclude={"id"})
+        candidate = upsert_candidate(candidate_id=payload.id, **fields)
         return JSONResponse(candidate, status_code=201)
 
 
@@ -214,10 +208,11 @@ async def api_cover_letter(request: Request) -> JSONResponse:
 
 
 async def api_interview_questions(request: Request) -> JSONResponse:
-    payload = await request.json()
-    candidate_id = payload.get("candidate_id")
-    job_id = payload.get("job_id")
-    number = payload.get("number", 6)
+    try:
+        payload = InterviewRequest.model_validate(await request.json())
+    except ValueError:
+        return JSONResponse({"error": "candidate_id, job_id and a number between 1 and 12 are required"}, status_code=400)
+    candidate_id, job_id, number = payload.candidate_id, payload.job_id, payload.number
     try:
         questions = generate_interview_questions(candidate_id=candidate_id, job_id=job_id, number=number)
         return JSONResponse(questions)
@@ -226,9 +221,11 @@ async def api_interview_questions(request: Request) -> JSONResponse:
 
 
 async def api_interview_checklist(request: Request) -> JSONResponse:
-    payload = await request.json()
-    candidate_id = payload.get("candidate_id")
-    job_id = payload.get("job_id")
+    try:
+        payload = InterviewRequest.model_validate(await request.json())
+    except ValueError:
+        return JSONResponse({"error": "candidate_id and job_id are required"}, status_code=400)
+    candidate_id, job_id = payload.candidate_id, payload.job_id
     try:
         checklist = get_application_checklist(candidate_id=candidate_id, job_id=job_id)
         return JSONResponse(checklist)
@@ -340,7 +337,7 @@ def run_web_server(host: str = "127.0.0.1", port: int = 8000) -> None:
     import uvicorn
     init_db()
     seed_demo_data()
-    print(f"🚀 JobPilot Africa Dashboard disponible sur : http://{host}:{port}")
+    print(f"JobPilot Africa Dashboard: http://{host}:{port}")
     uvicorn.run(app, host=host, port=port)
 
 

@@ -10,7 +10,7 @@ interface ProfileTabProps {
 }
 
 export const ProfileTab: React.FC<ProfileTabProps> = ({ candidate, onExploreJobs, onOpenResumeParser }) => {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   return (
     <div className="space-y-6">
 
@@ -31,7 +31,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({ candidate, onExploreJobs
                   {candidate.name}
                 </h2>
                 <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                  {candidate.available ? t.profile.available : t.profile.busy}
+                  {candidate.available == null ? (lang === 'fr' ? 'Disponibilité non renseignée' : 'Availability not provided') : candidate.available ? t.profile.available : t.profile.busy}
                 </span>
               </div>
               <p className="text-sm font-medium text-emerald-400">
@@ -42,7 +42,7 @@ export const ProfileTab: React.FC<ProfileTabProps> = ({ candidate, onExploreJobs
                   <MapPin className="w-3.5 h-3.5 text-slate-500" /> {candidate.country}
                 </span>
                 <span className="flex items-center gap-1">
-                  <Briefcase className="w-3.5 h-3.5 text-slate-500" /> {candidate.experience_years} {t.profile.experience_years}
+                  <Briefcase className="w-3.5 h-3.5 text-slate-500" /> {candidate.experience_years == null ? (lang === 'fr' ? 'Expérience non renseignée' : 'Experience not provided') : `${candidate.experience_years} ${t.profile.experience_years}`}
                 </span>
                 <span className="flex items-center gap-1">
                   <Mail className="w-3.5 h-3.5 text-slate-500" /> {candidate.email}
