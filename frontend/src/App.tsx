@@ -19,6 +19,12 @@ const normalizeCandidate = (data: Candidate): Candidate => ({
   skills: data.skills || [], bio: data.summary || '',
 });
 
+const normalizeJob = (job: Job): Job => ({
+  ...job, location: job.location || job.country || 'Afrique',
+  remote: job.remote ?? job.remote_allowed ?? false,
+  required_skills: job.required_skills || job.skills || [], nice_to_have: job.nice_to_have || [],
+});
+
 export const App: React.FC = () => {
   const { lang } = useLanguage();
   const [activeTab, setActiveTab] = useState<string>('jobs');
@@ -50,6 +56,12 @@ export const App: React.FC = () => {
   };
 
   const fetchData = () => setRevision(value => value + 1);
+  const refreshJobs = async () => {
+    const response = await fetch('/api/jobs');
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data: Job[] = await response.json();
+    setJobs(data.map(normalizeJob));
+  };
   const selectCandidate = (id: string) => {
     activeCandidateRef.current = undefined;
     localStorage.setItem('jobpilot_candidate', id);
@@ -77,10 +89,7 @@ export const App: React.FC = () => {
         const active = profiles.find(profile => profile.id === selectedCandidateId) || profiles[0] || null;
         const apps = active ? await read(`/api/applications?candidate_id=${encodeURIComponent(active.id)}`) : [];
         if (controller.signal.aborted) return;
-        setJobs(rawJobs.map((job: Job) => ({ ...job,
-          location: job.location || job.country || 'Afrique', remote: job.remote ?? job.remote_allowed ?? false,
-          required_skills: job.required_skills || job.skills || [], nice_to_have: job.nice_to_have || [],
-        })));
+        setJobs(rawJobs.map(normalizeJob));
         setCandidates(profiles);
         setCandidate(active);
         activeCandidateRef.current = active?.id;
@@ -228,6 +237,7 @@ export const App: React.FC = () => {
             onGenerateCoverLetter={handleGenerateCoverLetter}
             onApplyJob={handleApplyJob}
             appliedJobIds={appliedJobIds}
+            onJobsImported={refreshJobs}
           />
         )}
 

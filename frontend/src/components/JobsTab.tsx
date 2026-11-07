@@ -4,6 +4,7 @@ import type { Job } from '../types';
 import { useLanguage } from '../i18n/LanguageContext';
 import { useGeography, findCountry } from '../geography';
 import { OfferAnalysisPanel } from './OfferAnalysisPanel';
+import { JobSourcesPanel } from './JobSourcesPanel';
 
 interface JobsTabProps {
   candidateId: string;
@@ -13,6 +14,7 @@ interface JobsTabProps {
   onGenerateCoverLetter: (jobId: string) => void;
   onApplyJob: (jobId: string) => void;
   appliedJobIds: Set<string>;
+  onJobsImported: () => Promise<void>;
 }
 
 export const JobsTab: React.FC<JobsTabProps> = ({
@@ -23,6 +25,7 @@ export const JobsTab: React.FC<JobsTabProps> = ({
   onGenerateCoverLetter,
   onApplyJob,
   appliedJobIds,
+  onJobsImported,
 }) => {
   const { t, lang } = useLanguage();
   const geography = useGeography();
@@ -66,6 +69,7 @@ export const JobsTab: React.FC<JobsTabProps> = ({
     <div className="space-y-6">
 
       <OfferAnalysisPanel candidateId={candidateId} />
+      <JobSourcesPanel onImported={onJobsImported} />
 
       {/* Hero Banner with Stats */}
       <div className="relative rounded-3xl p-6 sm:p-8 overflow-hidden bg-gradient-to-br from-slate-900 via-slate-900/90 to-emerald-950/40 border border-slate-800/80 shadow-2xl">
@@ -80,7 +84,7 @@ export const JobsTab: React.FC<JobsTabProps> = ({
               {lang === 'fr' ? 'Ta carrière, à l’échelle de toute l’Afrique' : 'Your career, across all of Africa'}
             </h1>
             <p className="mt-2 text-slate-300 text-sm sm:text-base max-w-2xl leading-relaxed">
-              {lang === 'fr' ? 'Explore les 55 pays et les cinq régions du continent. Les offres actuelles constituent un catalogue de démonstration : un pays disponible dans les filtres ne garantit pas encore des offres sur place.' : 'Explore all 55 countries and five regions. Current listings are a demonstration catalogue: a country available in the filters does not yet guarantee local opportunities.'}
+              {lang === 'fr' ? 'Explore les 55 pays et les cinq régions du continent. Le catalogue réunit des exemples de démonstration et les annonces que vous importez. Un pays disponible dans les filtres ne garantit pas des offres sur place.' : 'Explore all 55 countries and five regions. The catalogue combines demo examples and postings you import. A country available in the filters does not guarantee local opportunities.'}
             </p>
           </div>
 
@@ -205,6 +209,11 @@ export const JobsTab: React.FC<JobsTabProps> = ({
                   </div>
 
                   {/* Description */}
+                  <p className="mt-3 text-xs text-slate-400">
+                    {job.source === 'greenhouse'
+                      ? `Greenhouse · ${lang === 'fr' ? 'Collectée le' : 'Collected on'} ${job.last_seen_at ? new Date(job.last_seen_at).toLocaleString(lang === 'fr' ? 'fr-FR' : 'en-GB') : '—'}`
+                      : (lang === 'fr' ? 'Offre locale / démonstration' : 'Local / demo job')}
+                  </p>
                   <p className="mt-3 text-xs sm:text-sm text-slate-300 line-clamp-3 leading-relaxed">
                     {job.description || 'Opportunité tech pour jeunes talents.'}
                   </p>

@@ -79,3 +79,28 @@ def test_api_preview_and_invalid_payload(monkeypatch):
     assert client.post("/api/sources/greenhouse/import", json={"board": "test", "company": "Test", "save": "false"}).status_code == 400
     monkeypatch.setattr(source_service, "_fetch_board", lambda _: {"broken": True})
     assert client.post("/api/sources/greenhouse/import", json={"board": "test", "company": "Test"}).status_code == 502
+
+
+def test_api_import_refreshes_catalogue_with_latest_board_and_provenance(monkeypatch):
+    client = TestClient(app)
+    monkeypatch.setattr(source_service, "_fetch_board", lambda _: {"jobs": [posting()]})
+    payload = {"board": "test", "company": "Test"}
+    preview = client.post("/api/sources/greenhouse/import", json=payload).json()
+    assert preview["eligible"] == 1
+    assert client.get("/api/jobs/GH-test-123").status_code == 404
+
+    # The employer board may change after preview; the saved response is authoritative.
+    monkeypatch.setattr(source_service, "_fetch_board", lambda _: {"jobs": [posting(125), posting(126, "Remote - US")]})
+    saved = client.post("/api/sources/greenhouse/import", json={**payload, "save": True})
+    assert saved.status_code == 200
+    assert saved.json()["saved"] is True
+    assert saved.json()["fetched"] == 2
+    assert saved.json()["skipped_location"] == 1
+    assert saved.json()["offers"][0]["id"] == "GH-test-125"
+    catalogue = client.get("/api/jobs").json()
+    imported = [job for job in catalogue if job["id"] == "GH-test-125"]
+    assert len(imported) == 1
+    assert imported[0]["source"] == "greenhouse"
+    assert imported[0]["source_location"] == "Remote - Kenya"
+    assert imported[0]["last_seen_at"]
+    assert client.get("/api/jobs/GH-test-123").status_code == 404

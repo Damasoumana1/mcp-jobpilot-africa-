@@ -49,5 +49,26 @@ sont celles d'une observation de l'API, pas des garanties de disponibilité futu
 
 Le réseau est limité à l'hôte API Greenhouse, avec un identifiant de portail
 contraint, sans redirections, délai de 15 secondes et réponse limitée à 5 Mo.
-Le connecteur est disponible par CLI/API/MCP ; aucun écran de gestion des sources
-ni collecte planifiée n'est encore fourni.
+Le connecteur est disponible par CLI/API/MCP et depuis le panneau
+« Importer des offres · Greenhouse » de l'onglet Offres Tech.
+
+## Depuis le tableau de bord
+
+1. Ouvrir le panneau d'import dans Offres Tech.
+2. Renseigner l'identifiant exact du portail Greenhouse et le nom d'entreprise.
+3. Cliquer sur « Prévisualiser les offres ». Aucun enregistrement n'est effectué.
+   L'aperçu affiche les annonces reçues, retenues et ignorées pour leur localisation,
+   ainsi que les liens employeur et les compétences mentionnées.
+4. Cliquer sur « Importer dans le catalogue » pour enregistrer les annonces retenues.
+   L'import relit le portail : le contenu final peut différer de l'aperçu.
+5. Le catalogue est actualisé sur place. Les cartes importées affichent leur source
+   Greenhouse et leur date de dernière collecte.
+
+Une modification du portail ou de l'entreprise efface l'aperçu précédent.
+Un portail sans annonce retenue ne propose pas d'import. Si l'enregistrement
+réussit mais l'actualisation du catalogue échoue, un bouton permet de relancer
+uniquement cette actualisation. Une erreur réseau pendant l'import ne permet pas
+de confirmer l'enregistrement : vérifier le catalogue avant de réessayer.
+
+L'interface est disponible en français et en anglais. Aucune collecte planifiée
+n'est encore fournie.

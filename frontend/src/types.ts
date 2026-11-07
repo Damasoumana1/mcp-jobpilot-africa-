@@ -13,6 +13,10 @@ export interface Job {
   description?: string;
   status?: string;
   application_url?: string;
+  source?: string;
+  source_url?: string;
+  source_location?: string;
+  last_seen_at?: string;
 }
 
 export interface Candidate {
