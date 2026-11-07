@@ -76,6 +76,7 @@ CREATE TABLE IF NOT EXISTS applications (
     status TEXT NOT NULL DEFAULT 'saved',
     applied_at TEXT,
     next_action TEXT,
+    follow_up_date TEXT,
     notes TEXT,
     FOREIGN KEY (candidate_id) REFERENCES candidates(id),
     FOREIGN KEY (job_id) REFERENCES jobs(id)

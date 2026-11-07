@@ -10,7 +10,7 @@
 
 Les sections historiques ci-dessous décrivent le socle initial. Depuis :
 
-- 17 outils MCP, analyse explicable des offres avec historique, référentiel
+- 18 outils MCP, analyse explicable des offres avec historique, référentiel
   continental de 55 membres de l'UA et import Greenhouse avec traçabilité.
 - Panneau Greenhouse FR/EN dans Offres Tech : aperçu sans enregistrement,
   import explicite, actualisation du catalogue et provenance sur les cartes.
@@ -18,9 +18,12 @@ Les sections historiques ci-dessous décrivent le socle initial. Depuis :
   profil actif et filtrage des candidatures par candidat.
 - Studio d'entretien connecté à une offre et au candidat actif, avec checklist
   persistante dans le navigateur pour chaque couple candidat/offre.
+- Relances persistantes des candidatures : prochaine action, date, compteurs et
+  vue « À faire aujourd'hui » (relances du jour et en retard), disponibles en FR/EN.
+  Nouveau tool MCP `set_application_follow_up` et migration des bases existantes.
 - Correction des champs de réponse du matching et validation des requêtes de
   création de profil et de préparation d'entretien.
-- 131 tests Python passent ; compilation TypeScript et build Vite validés.
+- 148 tests Python passent ; compilation TypeScript et build Vite validés.
 
 Voir [le parcours candidat](docs/candidate-journey.md) pour le fonctionnement,
 les limites et la vérification manuelle.

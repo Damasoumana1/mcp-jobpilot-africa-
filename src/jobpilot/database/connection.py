@@ -21,6 +21,10 @@ def init_db() -> None:
     try:
         schema_sql = Path(__file__).with_name("schema.sql").read_text(encoding="utf-8")
         conn.executescript(schema_sql)
+        # Upgrade existing installations without replacing application records.
+        columns = {row[1] for row in conn.execute("PRAGMA table_info(applications)")}
+        if "follow_up_date" not in columns:
+            conn.execute("ALTER TABLE applications ADD COLUMN follow_up_date TEXT")
         conn.commit()
     finally:
         conn.close()

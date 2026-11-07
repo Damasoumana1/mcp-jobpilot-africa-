@@ -8,6 +8,7 @@ from jobpilot.services.application_service import (
     generate_cover_letter,
     list_applications,
     update_application_status,
+    update_application,
 )
 
 
@@ -30,6 +31,13 @@ def list_applications_tool(candidate_id: str | None = None) -> list[Application]
     """List tracked applications, optionally filtered by a specific candidate_id."""
     raw_list = list_applications(candidate_id=candidate_id)
     return [Application.model_validate(app) for app in raw_list]
+
+
+@mcp.tool(name="set_application_follow_up")
+def set_application_follow_up_tool(application_id: str, next_action: str | None, follow_up_date: str | None) -> Application:
+    """Set a next action and YYYY-MM-DD follow-up date. Pass null for both to complete/clear the reminder. Does not send messages."""
+    raw = update_application(application_id, {"next_action": next_action, "follow_up_date": follow_up_date})
+    return Application.model_validate(raw)
 
 
 @mcp.tool(name="generate_cover_letter")

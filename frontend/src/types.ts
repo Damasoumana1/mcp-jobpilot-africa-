@@ -44,6 +44,14 @@ export interface Application {
   notes?: string;
   job_title?: string;
   company?: string;
+  next_action?: string | null;
+  follow_up_date?: string | null;
+}
+
+export interface ApplicationUpdate {
+  status?: string;
+  next_action?: string | null;
+  follow_up_date?: string | null;
 }
 
 export interface MatchResult {

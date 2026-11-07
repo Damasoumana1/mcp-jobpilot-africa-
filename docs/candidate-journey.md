@@ -16,6 +16,34 @@ Ce sélecteur convient au tableau de bord local partagé. Il ne constitue pas
 une authentification ni une isolation des données entre utilisateurs :
 l'API permet toujours de consulter les profils et candidatures existants.
 
+## Relances des candidatures
+
+Dans Candidatures, chaque ligne permet d'enregistrer une prochaine action
+(500 caractères maximum) et une date de relance. Les informations sont conservées
+en SQLite et restent disponibles après rechargement ou changement d'appareil.
+La migration des bases existantes ajoute la date sans supprimer les candidatures.
+
+« À faire aujourd'hui » affiche les candidatures actives (`saved`, `applied`,
+`interview`) dont la date est aujourd'hui ou passée, les plus anciennes d'abord.
+Les candidatures `offer` et `rejected` restent dans « Toutes » ; leurs dates
+restent enregistrées mais ne participent pas aux compteurs de relances.
+Les compteurs et le filtre suivent la date locale du navigateur, sans conversion
+UTC des dates de relance. Ils sont recalculés chaque minute et au retour sur la fenêtre.
+
+« Marquer la relance comme faite » efface la prochaine action et sa date sans
+modifier le statut ni les notes. Pour annuler uniquement la date, vider le champ
+date puis enregistrer. Aucun e-mail, notification système ou message au recruteur
+n'est envoyé automatiquement : ce sont des rappels dans le tableau de bord.
+
+L'API `PATCH /api/applications/{id}` accepte des mises à jour partielles :
+
+```json
+{"next_action": "Relancer le recruteur", "follow_up_date": "2026-11-12"}
+```
+
+Un champ absent conserve sa valeur ; `null` efface la date, l'action ou les notes.
+Les dates doivent être valides au format `YYYY-MM-DD`.
+
 ## Vérification manuelle
 
 1. Créer deux profils et sélectionner le premier.

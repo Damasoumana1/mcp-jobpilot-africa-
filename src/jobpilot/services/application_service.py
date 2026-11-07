@@ -4,6 +4,7 @@ import uuid
 from datetime import datetime
 
 from jobpilot.database.connection import get_connection
+from jobpilot.models.application import ApplicationUpdate
 
 
 def create_application(candidate_id: str, job_id: str, status: str = "saved") -> dict:
@@ -36,20 +37,24 @@ def create_application(candidate_id: str, job_id: str, status: str = "saved") ->
 
 def update_application_status(application_id: str, status: str, notes: str | None = None) -> dict:
     """Update the current status of an application."""
+    fields = {"status": status}
+    if notes is not None:
+        fields["notes"] = notes
+    return update_application(application_id, fields)
+
+
+def update_application(application_id: str, changes: dict) -> dict:
+    """Patch only supplied fields; explicit null clears a reminder or notes."""
+    fields = ApplicationUpdate.model_validate(changes).model_dump(exclude_unset=True)
     conn = get_connection()
     try:
         existing = conn.execute("SELECT id FROM applications WHERE id = ?", (application_id,)).fetchone()
         if not existing:
             raise ValueError(f"Application '{application_id}' not found")
 
-        conn.execute(
-            """
-            UPDATE applications
-            SET status = ?, notes = COALESCE(?, notes)
-            WHERE id = ?
-            """,
-            (status, notes, application_id),
-        )
+        # Keys are restricted to the fields of ApplicationUpdate above.
+        assignments = ", ".join(f"{field} = ?" for field in fields)
+        conn.execute(f"UPDATE applications SET {assignments} WHERE id = ?", (*fields.values(), application_id))
         conn.commit()
         row = conn.execute("SELECT * FROM applications WHERE id = ?", (application_id,)).fetchone()
         return dict(row)
@@ -63,11 +68,13 @@ def list_applications(candidate_id: str | None = None) -> list[dict]:
     try:
         if candidate_id:
             rows = conn.execute(
-                "SELECT * FROM applications WHERE candidate_id = ? ORDER BY applied_at DESC",
+                """SELECT a.*, j.title AS job_title, j.company FROM applications a
+                   LEFT JOIN jobs j ON j.id = a.job_id WHERE a.candidate_id = ? ORDER BY a.applied_at DESC""",
                 (candidate_id,),
             ).fetchall()
         else:
-            rows = conn.execute("SELECT * FROM applications ORDER BY applied_at DESC").fetchall()
+            rows = conn.execute("""SELECT a.*, j.title AS job_title, j.company FROM applications a
+                LEFT JOIN jobs j ON j.id = a.job_id ORDER BY a.applied_at DESC""").fetchall()
         return [dict(row) for row in rows]
     finally:
         conn.close()

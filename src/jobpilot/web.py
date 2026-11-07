@@ -12,6 +12,7 @@ from pydantic import ValidationError
 
 from jobpilot.models.job_analysis import JobAnalysisRequest
 from jobpilot.models.web_requests import CandidateRequest, InterviewRequest
+from jobpilot.models.application import ApplicationUpdate
 from jobpilot.services.job_analysis_service import analyze_job, list_job_analyses
 
 from jobpilot.database.connection import init_db
@@ -20,7 +21,7 @@ from jobpilot.services.application_service import (
     create_application,
     generate_cover_letter,
     list_applications,
-    update_application_status,
+    update_application,
 )
 from jobpilot.services.candidate_service import get_candidate, list_candidates, upsert_candidate
 from jobpilot.services.interview_service import generate_interview_questions, get_application_checklist
@@ -184,11 +185,12 @@ async def api_applications(request: Request) -> JSONResponse:
 
 async def api_update_application(request: Request) -> JSONResponse:
     app_id = request.path_params["application_id"]
-    payload = await request.json()
-    status = payload.get("status", "applied")
-    notes = payload.get("notes")
     try:
-        updated = update_application_status(application_id=app_id, status=status, notes=notes)
+        payload = ApplicationUpdate.model_validate(await request.json())
+    except ValueError:
+        return JSONResponse({"error": "Invalid update: use a valid status, next_action (max 500 characters), notes or follow_up_date (YYYY-MM-DD). Use null to clear a reminder."}, status_code=400)
+    try:
+        updated = update_application(app_id, payload.model_dump(exclude_unset=True))
         return JSONResponse(updated)
     except ValueError as e:
         return JSONResponse({"error": str(e)}, status_code=400)

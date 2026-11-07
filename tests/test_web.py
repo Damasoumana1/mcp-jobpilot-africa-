@@ -118,3 +118,36 @@ def test_interview_rejects_invalid_question_count(number):
 @pytest.mark.parametrize("payload", [{}, {"id": "NEW", "full_name": " ", "country": "Mali"}, {"id": "NEW", "full_name": "Awa", "country": "Mali", "skills": "Python"}])
 def test_candidate_creation_rejects_invalid_profiles(payload):
     assert client.post("/api/candidates", json=payload).status_code == 400
+
+
+def test_api_follow_up_is_partial_persistent_and_filtered_by_profile():
+    client.post("/api/candidates", json={"id": "OTHER", "full_name": "Other", "country": "Mali"})
+    app = client.post("/api/applications", json={"candidate_id": "DAMA-001", "job_id": "JOB-001", "status": "interview"}).json()
+    response = client.patch(f"/api/applications/{app['id']}", json={"next_action": "Follow up", "follow_up_date": "2026-11-07"})
+    assert response.status_code == 200
+    assert response.json()["status"] == "interview"
+    own = client.get("/api/applications", params={"candidate_id": "DAMA-001"}).json()
+    persisted = next(row for row in own if row["id"] == app["id"])
+    assert persisted["follow_up_date"] == "2026-11-07"
+    assert persisted["job_title"] == "AI Intern"
+    assert persisted["company"] == "AfrikaLabs"
+    assert client.get("/api/applications", params={"candidate_id": "OTHER"}).json() == []
+    cleared = client.patch(f"/api/applications/{app['id']}", json={"follow_up_date": None})
+    assert cleared.json()["follow_up_date"] is None
+    assert cleared.json()["next_action"] == "Follow up"
+
+
+@pytest.mark.parametrize("payload", [
+    {}, {"follow_up_date": "2026-02-29"}, {"follow_up_date": "2026-11-31"},
+    {"follow_up_date": "20261107"}, {"follow_up_date": "2026-1-07"},
+    {"follow_up_date": "2026-11-07T00:00:00Z"}, {"follow_up_date": 123},
+    {"status": None}, {"status": "unknown"}, {"next_action": "a" * 501},
+    {"candidate_id": "OTHER"}, [], None,
+])
+def test_api_rejects_invalid_follow_up_without_partial_changes(payload):
+    app = client.post("/api/applications", json={"candidate_id": "DAMA-001", "job_id": "JOB-001", "status": "interview"}).json()
+    response = client.patch(f"/api/applications/{app['id']}", content=json.dumps(payload), headers={"Content-Type": "application/json"})
+    assert response.status_code == 400
+    persisted = next(row for row in client.get("/api/applications").json() if row["id"] == app["id"])
+    assert persisted["status"] == "interview"
+    assert persisted["follow_up_date"] is None

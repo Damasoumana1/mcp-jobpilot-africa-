@@ -98,6 +98,15 @@ List all tracked applications, optionally filtered for a specific candidate.
   * `candidate_id` (`str | None`): Optional filter by candidate ID.
 * **Returns:** `list[Application]`
 
+### `set_application_follow_up`
+Set or clear a dashboard follow-up without changing application status or notes.
+* **Arguments:**
+  * `application_id` (`str`): Application identifier.
+  * `next_action` (`str | None`): Next task, maximum 500 characters.
+  * `follow_up_date` (`str | None`): Valid calendar date in `YYYY-MM-DD` format.
+* **Returns:** `Application`, including `next_action` and `follow_up_date`.
+* Pass `null` for both fields to complete/clear a follow-up. This does not send messages.
+
 ### `generate_cover_letter`
 Generate a tailored motivation cover letter, catchy email subject line, and concise LinkedIn outreach pitch.
 * **Arguments:**

@@ -10,7 +10,7 @@ import { NewJobModal } from './components/NewJobModal';
 import { CopilotChat } from './components/CopilotChat';
 import { CandidateManager } from './components/CandidateManager';
 import { ResumeParserModal } from './components/ResumeParserModal';
-import type { Job, Candidate, Application, CoverLetterResponse } from './types';
+import type { Job, Candidate, Application, ApplicationUpdate, CoverLetterResponse } from './types';
 import { CheckCircle2, AlertCircle, Bot } from 'lucide-react';
 import { useLanguage } from './i18n/LanguageContext';
 
@@ -140,28 +140,23 @@ export const App: React.FC = () => {
     }
   };
 
-  const handleStatusChange = async (applicationId: string, newStatus: string) => {
+  const handleApplicationUpdate = async (applicationId: string, changes: ApplicationUpdate) => {
     const requestCandidateId = candidate?.id;
-    try {
-      const res = await fetch(`/api/applications/${applicationId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus }),
-      });
+    const res = await fetch(`/api/applications/${applicationId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(changes),
+    });
 
-      if (!res.ok) {
-        throw new Error('Erreur de mise à jour du statut');
-      }
-
-      await res.json();
-      if (activeCandidateRef.current !== requestCandidateId) return;
-      setApplications((prev) =>
-        prev.map((app) => (app.id === applicationId ? { ...app, status: newStatus } : app))
-      );
-      showToast(`Statut mis à jour : "${newStatus}"`);
-    } catch (err: any) {
-      showToast(err.message || 'Erreur', 'error');
+    if (!res.ok) {
+      throw new Error(lang === 'fr' ? 'Enregistrement impossible. Réessayez.' : 'Unable to save. Please retry.');
     }
+
+    const updated: Application = await res.json();
+    if (activeCandidateRef.current !== requestCandidateId) return;
+    setApplications((prev) =>
+      prev.map((app) => (app.id === applicationId ? { ...app, ...updated } : app))
+    );
   };
 
   const handleGenerateCoverLetter = async (jobId: string) => {
@@ -254,7 +249,7 @@ export const App: React.FC = () => {
         {activeTab === 'applications' && (
           <ApplicationsTab
             applications={applications}
-            onStatusChange={handleStatusChange}
+            onUpdate={handleApplicationUpdate}
             onRefresh={fetchData}
             onGenerateCoverLetter={handleGenerateCoverLetter}
           />
