@@ -119,6 +119,11 @@ Generate a tailored motivation cover letter, catchy email subject line, and conc
 
 ## 4. Interview Preparation & Coaching
 
+The `prepare_application_pack(candidate_id, job_id, language="fr")` tool returns
+four editable document previews (FR/EN): cover letter, email/pitch, checklist and
+job/skill summary. It does not send, save or create an application.
+See [application packs](application-pack.md) for ZIP export via the web API.
+
 ### `generate_interview_questions`
 Generate tailored technical and behavioral interview questions based on the candidate's background and the employer's job description.
 * **Arguments:**

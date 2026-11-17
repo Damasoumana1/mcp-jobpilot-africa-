@@ -30,6 +30,8 @@ from jobpilot.services.matching_service import match_candidate_to_job
 from jobpilot.services.resume_service import parse_resume
 from jobpilot.geography import COUNTRIES, REGIONS
 from jobpilot.services.source_service import GreenhouseRequest, import_greenhouse
+from jobpilot.services.pdf_service import MAX_PDF_BYTES, PdfExtractionError, extract_pdf_isolated
+from jobpilot.services.application_pack_service import PackRequest, PackDownload, prepare_application_pack, build_pack_zip
 from starlette.concurrency import run_in_threadpool
 
 
@@ -121,6 +123,47 @@ async def api_candidates(request: Request) -> JSONResponse:
         fields = payload.model_dump(exclude={"id"})
         candidate = upsert_candidate(candidate_id=payload.id, **fields)
         return JSONResponse(candidate, status_code=201)
+
+
+async def api_application_pack(request: Request) -> Response:
+    body = bytearray()
+    async for chunk in request.stream():
+        body.extend(chunk)
+        if len(body) > 2_500_000:
+            return JSONResponse({"error": "Pack request too large"}, status_code=413)
+    try:
+        payload = json.loads(body)
+        if request.url.path.endswith("/download"):
+            pack = PackDownload.model_validate(payload)
+            archive = build_pack_zip(pack)
+            return Response(archive, media_type="application/zip", headers={
+                "Content-Disposition": 'attachment; filename="jobpilot-application-pack.zip"',
+                "Cache-Control": "no-store",
+            })
+        pack_request = PackRequest.model_validate(payload)
+    except ValueError:
+        return JSONResponse({"error": "Invalid application pack request"}, status_code=400)
+    try:
+        return JSONResponse(prepare_application_pack(pack_request), headers={"Cache-Control": "no-store"})
+    except LookupError:
+        return JSONResponse({"error": "Candidate or job not found"}, status_code=404)
+    except ValueError:
+        return JSONResponse({"error": "Application pack content exceeds the supported size"}, status_code=400)
+
+
+async def api_extract_resume_pdf(request: Request) -> JSONResponse:
+    if request.headers.get("content-type", "").split(";", 1)[0].strip().lower() != "application/pdf":
+        return JSONResponse({"error": "pdf_required"}, status_code=415)
+    content = bytearray()
+    async for chunk in request.stream():
+        content.extend(chunk)
+        if len(content) > MAX_PDF_BYTES:
+            return JSONResponse({"error": "pdf_too_large"}, status_code=413)
+    try:
+        result = await run_in_threadpool(extract_pdf_isolated, bytes(content))
+        return JSONResponse(result)
+    except PdfExtractionError as exc:
+        return JSONResponse({"error": exc.code}, status_code=422)
 
 
 async def api_parse_resume(request: Request) -> JSONResponse:
@@ -310,6 +353,8 @@ async def api_greenhouse_import(request: Request) -> JSONResponse:
 
 
 routes = [
+    Route("/api/applications/pack", endpoint=api_application_pack, methods=["POST"]),
+    Route("/api/applications/pack/download", endpoint=api_application_pack, methods=["POST"]),
     Route("/api/sources/greenhouse/import", endpoint=api_greenhouse_import, methods=["POST"]),
     Route("/api/geography", endpoint=api_geography, methods=["GET"]),
     Route("/api/jobs/analyze", endpoint=api_job_analysis, methods=["POST"]),
@@ -319,6 +364,7 @@ routes = [
     Route("/api/jobs/{job_id}", endpoint=api_job_detail, methods=["GET"]),
     Route("/api/candidates", endpoint=api_candidates, methods=["GET", "POST"]),
     Route("/api/candidates/parse-resume", endpoint=api_parse_resume, methods=["POST"]),
+    Route("/api/candidates/extract-resume-pdf", endpoint=api_extract_resume_pdf, methods=["POST"]),
     Route("/api/candidates/{candidate_id}", endpoint=api_candidate_detail, methods=["GET"]),
     Route("/api/match", endpoint=api_match, methods=["POST"]),
     Route("/api/applications", endpoint=api_applications, methods=["GET", "POST"]),

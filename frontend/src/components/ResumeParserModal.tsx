@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { X, FileText, Sparkles, CheckCircle2, UserCheck, RefreshCw } from 'lucide-react';
 import type { Candidate } from '../types';
 
@@ -53,29 +53,65 @@ export const ResumeParserModal: React.FC<ResumeParserModalProps> = ({
   const [resumeText, setResumeText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [parsedData, setParsedData] = useState<ParsedResumeData | null>(null);
+  const [fileError, setFileError] = useState('');
+  const [pdfInfo, setPdfInfo] = useState('');
+  const activeRequest = useRef<AbortController | null>(null);
+  useEffect(() => () => activeRequest.current?.abort(), []);
+
+  const replaceText = (text: string) => {
+    setResumeText(text);
+    setParsedData(null);
+    setFileError('');
+    setPdfInfo('');
+  };
 
   if (!isOpen) return null;
 
   const handleLoadSample = () => {
-    setResumeText(SAMPLE_AFRICA_RESUME.trim());
+    replaceText(SAMPLE_AFRICA_RESUME.trim());
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    e.target.value = '';
     if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const content = event.target?.result as string;
-      if (content) {
+    replaceText('');
+    const controller = new AbortController();
+    activeRequest.current?.abort();
+    activeRequest.current = controller;
+    setIsLoading(true);
+    try {
+      if (file.size > 5 * 1024 * 1024) throw new Error('Le fichier dépasse la limite de 5 Mo.');
+      if (/\.pdf$/i.test(file.name) || file.type === 'application/pdf') {
+        const response = await fetch('/api/candidates/extract-resume-pdf', {
+          method: 'POST', headers: { 'Content-Type': 'application/pdf' }, body: file, signal: controller.signal,
+        });
+        const data = await response.json();
+        const messages: Record<string, string> = {
+          pdf_too_large: 'Le PDF dépasse la limite de 5 Mo.',
+          too_many_pages: 'Le PDF dépasse la limite de 10 pages.',
+          encrypted_pdf: 'Ce PDF est protégé. Importez une version sans mot de passe.',
+          no_pdf_text: 'Aucun texte extractible. Ce PDF peut être scanné : utilisez un outil OCR puis importez le texte.',
+          invalid_pdf: 'Le fichier PDF est invalide ou endommagé.',
+          too_much_text: 'Le PDF contient trop de texte (100 000 caractères maximum).',
+          pdf_timeout: 'Extraction trop longue. Essayez un PDF plus simple ou collez son texte.',
+        };
+        if (!response.ok) throw new Error(messages[data.error] || 'Impossible d’extraire ce PDF.');
+        if (controller.signal.aborted) return;
+        setResumeText(data.resume_text);
+        setPdfInfo(`${data.page_count} page(s) lue(s). ${data.empty_pages.length ? `Pages sans texte : ${data.empty_pages.join(', ')}. Leur contenu peut nécessiter de l’OCR. ` : ''}Vérifiez le texte extrait avant de l’analyser. Aucun profil n’a été modifié.`);
+      } else {
+        if (!/\.(txt|md|json)$/i.test(file.name)) throw new Error('Formats acceptés : PDF, TXT, MD et JSON.');
+        const content = await file.text();
+        if (controller.signal.aborted) return;
+        if (content.length > 100000) throw new Error('Le texte dépasse 100 000 caractères.');
         setResumeText(content);
-        showToast('Fichier chargé avec succès !', 'success');
       }
-    };
-    reader.onerror = () => {
-      showToast('Erreur lors de la lecture du fichier', 'error');
-    };
-    reader.readAsText(file);
+    } catch (error) {
+      if (!controller.signal.aborted) setFileError(error instanceof Error ? error.message : 'Erreur de lecture du fichier.');
+    } finally {
+      if (!controller.signal.aborted) setIsLoading(false);
+    }
   };
 
   const handleAnalyze = async () => {
@@ -85,8 +121,11 @@ export const ResumeParserModal: React.FC<ResumeParserModalProps> = ({
     }
 
     setIsLoading(true);
+    const controller = new AbortController();
+    activeRequest.current = controller;
     try {
       const res = await fetch('/api/candidates/parse-resume', {
+        signal: controller.signal,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -102,9 +141,11 @@ export const ResumeParserModal: React.FC<ResumeParserModalProps> = ({
       }
 
       const data: ParsedResumeData = await res.json();
+      if (controller.signal.aborted) return;
       setParsedData(data);
       showToast(`Analyse réussie : ${data.skills_count} compétences détectées !`, 'success');
     } catch (err: any) {
+      if (controller.signal.aborted) return;
       showToast(err.message || 'Impossible d’analyser le CV', 'error');
     } finally {
       setIsLoading(false);
@@ -115,8 +156,11 @@ export const ResumeParserModal: React.FC<ResumeParserModalProps> = ({
     if (!parsedData) return;
 
     setIsLoading(true);
+    const controller = new AbortController();
+    activeRequest.current = controller;
     try {
       const res = await fetch('/api/candidates/parse-resume', {
+        signal: controller.signal,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -131,12 +175,14 @@ export const ResumeParserModal: React.FC<ResumeParserModalProps> = ({
       }
 
       const data = await res.json();
+      if (controller.signal.aborted) return;
       const updated: Candidate = {
+        ...data.saved_candidate,
         id: candidateId,
         name: data.full_name || candidateId,
         email: data.email,
         country: data.country,
-        skills: data.skills || [],
+        skills: data.saved_candidate?.skills || data.skills || [],
         experience_years: data.experience_years,
         education: data.education,
         bio: data.summary,
@@ -146,6 +192,7 @@ export const ResumeParserModal: React.FC<ResumeParserModalProps> = ({
       showToast('Votre profil candidat a été mis à jour avec succès !', 'success');
       onClose();
     } catch (err: any) {
+      if (controller.signal.aborted) return;
       showToast(err.message || 'Erreur lors de l’enregistrement', 'error');
     } finally {
       setIsLoading(false);
@@ -153,7 +200,7 @@ export const ResumeParserModal: React.FC<ResumeParserModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200">
+    <div role="dialog" aria-modal="true" aria-labelledby="resume-title" className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200">
       <div className="bg-[#0b1322] border border-slate-800 rounded-3xl w-full max-w-3xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden">
         
         {/* Header */}
@@ -165,8 +212,8 @@ export const ResumeParserModal: React.FC<ResumeParserModalProps> = ({
               </div>
             </div>
             <div>
-              <h3 className="text-lg font-bold font-display text-white">
-                Analyseur de CV Intelligent (IA Agentique)
+              <h3 id="resume-title" className="text-lg font-bold font-display text-white">
+                Importer et analyser un CV
               </h3>
               <p className="text-xs text-slate-400">
                 Extrayez automatiquement vos compétences tech, formation et expérience
@@ -188,14 +235,17 @@ export const ResumeParserModal: React.FC<ResumeParserModalProps> = ({
           <div className="flex flex-wrap items-center justify-between gap-3 text-xs bg-slate-900/60 border border-slate-800 rounded-2xl p-4">
             <div className="flex items-center space-x-2 text-slate-300">
               <FileText className="w-4 h-4 text-emerald-400" />
-              <span>Collez votre CV ou chargez un fichier texte :</span>
+              <span>Collez votre CV ou chargez un PDF contenant du texte :</span>
             </div>
             <div className="flex items-center space-x-2">
               <label className="cursor-pointer px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium transition-colors border border-slate-700">
-                <span>Importer un fichier (.txt / .md)</span>
+                <span>Importer un CV (PDF / texte)</span>
                 <input
+                  id="resume-file"
+                  aria-label="Importer un CV"
                   type="file"
-                  accept=".txt,.md,.json"
+                  accept=".pdf,.txt,.md,.json"
+                  disabled={isLoading}
                   className="hidden"
                   onChange={handleFileUpload}
                 />
@@ -203,6 +253,7 @@ export const ResumeParserModal: React.FC<ResumeParserModalProps> = ({
               <button
                 type="button"
                 onClick={handleLoadSample}
+                disabled={isLoading}
                 className="px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-medium border border-emerald-500/30 transition-colors"
               >
                 Exemple Démo
@@ -210,15 +261,23 @@ export const ResumeParserModal: React.FC<ResumeParserModalProps> = ({
             </div>
           </div>
 
+          <p className="text-xs text-slate-400">PDF : 5 Mo et 10 pages maximum. Les PDF protégés ne sont pas acceptés ; les PDF scannés nécessitent de l’OCR. Le fichier est traité par le serveur JobPilot sans être enregistré sur disque.</p>
+          {isLoading && <p role="status" className="text-xs text-emerald-300">Traitement en cours…</p>}
+          {fileError && <p role="alert" className="text-sm text-rose-300">{fileError}</p>}
+          {pdfInfo && <p role="status" className="text-xs text-cyan-300">{pdfInfo}</p>}
+
           {/* Textarea */}
           <div className="space-y-2">
-            <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">
+            <label htmlFor="resume-text" className="text-xs font-semibold text-slate-400 uppercase tracking-wider block">
               Contenu du CV
             </label>
             <textarea
+              id="resume-text"
               rows={8}
               value={resumeText}
-              onChange={(e) => setResumeText(e.target.value)}
+              maxLength={100000}
+              disabled={isLoading}
+              onChange={(e) => replaceText(e.target.value)}
               placeholder="Collez ici les sections de votre CV (Compétences, Expériences, Formation, Coordonnées)..."
               className="w-full bg-[#070b14] border border-slate-800 rounded-2xl p-4 text-sm text-slate-200 font-mono placeholder:text-slate-600 focus:outline-none focus:border-emerald-500/60 transition-colors resize-none"
             />
@@ -282,7 +341,7 @@ export const ResumeParserModal: React.FC<ResumeParserModalProps> = ({
         </div>
 
         {/* Footer actions */}
-        <div className="flex items-center justify-between px-6 py-4 border-t border-slate-800 bg-slate-900/60">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-6 py-4 border-t border-slate-800 bg-slate-900/60">
           <button
             onClick={onClose}
             className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white transition-colors"
@@ -290,7 +349,7 @@ export const ResumeParserModal: React.FC<ResumeParserModalProps> = ({
             Fermer
           </button>
 
-          <div className="flex items-center space-x-3">
+          <div className="flex flex-col sm:flex-row gap-3">
             <button
               onClick={handleAnalyze}
               disabled={isLoading || !resumeText.trim()}

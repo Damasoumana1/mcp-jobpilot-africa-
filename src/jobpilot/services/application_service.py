@@ -130,7 +130,7 @@ def generate_cover_letter(candidate_id: str, job_id: str, tone: str = "professio
         )
         linkedin_pitch = (
             f"Hi! I'm {candidate_name}, a software engineer based in {candidate.get('country', 'Africa')}. "
-            f"Passionate about {company}'s tech impact, I recently applied for the {job_title} role. "
+            f"Passionate about {company}'s tech impact, I am interested in the {job_title} role. "
             f"With expertise in {skills_summary}, I would love to connect and learn more about your technical roadmap!"
         )
     else:
@@ -150,7 +150,7 @@ def generate_cover_letter(candidate_id: str, job_id: str, tone: str = "professio
         )
         linkedin_pitch = (
             f"Bonjour, je suis {candidate_name}, développeur basé en/au {candidate.get('country', 'Afrique')}. "
-            f"Très impressionné par la trajectoire de {company}, je viens de postuler pour le poste de {job_title}. "
+            f"Très intéressé par la trajectoire de {company}, le poste de {job_title} m'intéresse. "
             f"Spécialisé en {skills_summary}, seriez-vous ouvert à un court échange de 10 min pour discuter des défis techniques de l'équipe ?"
         )
 

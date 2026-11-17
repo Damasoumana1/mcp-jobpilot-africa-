@@ -15,6 +15,7 @@ interface JobsTabProps {
   onApplyJob: (jobId: string) => void;
   appliedJobIds: Set<string>;
   onJobsImported: () => Promise<void>;
+  onPreparePack: (jobId: string) => void;
 }
 
 export const JobsTab: React.FC<JobsTabProps> = ({
@@ -26,6 +27,7 @@ export const JobsTab: React.FC<JobsTabProps> = ({
   onApplyJob,
   appliedJobIds,
   onJobsImported,
+  onPreparePack,
 }) => {
   const { t, lang } = useLanguage();
   const geography = useGeography();
@@ -242,7 +244,10 @@ export const JobsTab: React.FC<JobsTabProps> = ({
 
                 {/* Card Actions */}
                 <div className="mt-6 pt-4 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-3">
-                  <div className="flex items-center space-x-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button onClick={() => onPreparePack(job.id)} className="px-3 py-1.5 rounded-lg text-xs font-medium bg-cyan-500/10 text-cyan-300 border border-cyan-500/30">
+                      {lang === 'fr' ? 'Pack candidature' : 'Application pack'}
+                    </button>
                     <button
                       onClick={() => onMatchJob(job.id)}
                       className="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 flex items-center gap-1.5 transition-colors"

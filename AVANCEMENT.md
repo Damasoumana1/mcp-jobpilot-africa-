@@ -1,16 +1,16 @@
 # 📊 Rapport d'Avancement Global • JobPilot Africa
-**Date de mise à jour** : 7 Novembre 2026
+**Date de mise à jour** : 15 Novembre 2026
 **Auteur & Maintainer** : Soumana Dama ([@Damasoumana1](https://github.com/Damasoumana1))  
 **Dépôt GitHub** : [github.com/Damasoumana1/mcp-jobpilot-africa-](https://github.com/Damasoumana1/mcp-jobpilot-africa-)  
 **Licence** : Open Source MIT  
 
 ---
 
-## État actuel — 7 novembre 2026
+## État actuel — 15 novembre 2026
 
 Les sections historiques ci-dessous décrivent le socle initial. Depuis :
 
-- 18 outils MCP, analyse explicable des offres avec historique, référentiel
+- 19 outils MCP, analyse explicable des offres avec historique, référentiel
   continental de 55 membres de l'UA et import Greenhouse avec traçabilité.
 - Panneau Greenhouse FR/EN dans Offres Tech : aperçu sans enregistrement,
   import explicite, actualisation du catalogue et provenance sur les cartes.
@@ -23,7 +23,11 @@ Les sections historiques ci-dessous décrivent le socle initial. Depuis :
   Nouveau tool MCP `set_application_follow_up` et migration des bases existantes.
 - Correction des champs de réponse du matching et validation des requêtes de
   création de profil et de préparation d'entretien.
-- 148 tests Python passent ; compilation TypeScript et build Vite validés.
+- Import de CV PDF contenant du texte : extraction, aperçu modifiable et
+  validation avant sauvegarde du profil. Limites et OCR : [documentation PDF](docs/resume-pdf.md).
+- Pack candidature FR/EN : aperçu modifiable et export ZIP des quatre documents,
+  sans envoi ni création de candidature. [Guide](docs/application-pack.md).
+- 168 tests Python passent ; compilation TypeScript et build Vite validés.
 
 Voir [le parcours candidat](docs/candidate-journey.md) pour le fonctionnement,
 les limites et la vérification manuelle.

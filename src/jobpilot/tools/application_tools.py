@@ -3,6 +3,7 @@ from __future__ import annotations
 from jobpilot.mcp_app import mcp
 from jobpilot.models.application import Application
 from jobpilot.models.outreach import CoverLetter
+from jobpilot.services.application_pack_service import PackRequest, prepare_application_pack
 from jobpilot.services.application_service import (
     create_application,
     generate_cover_letter,
@@ -17,6 +18,12 @@ def create_application_tool(candidate_id: str, job_id: str, status: str = "saved
     """Create an application tracking record for a candidate and a job."""
     raw = create_application(candidate_id=candidate_id, job_id=job_id, status=status)
     return Application.model_validate(raw)
+
+
+@mcp.tool(name="prepare_application_pack")
+def prepare_application_pack_tool(candidate_id: str, job_id: str, language: str = "fr") -> dict:
+    """Preview four editable application-pack documents in FR/EN. Does not save or send an application."""
+    return prepare_application_pack(PackRequest(candidate_id=candidate_id, job_id=job_id, language=language))
 
 
 @mcp.tool(name="update_application_status")

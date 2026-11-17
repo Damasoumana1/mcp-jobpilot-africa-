@@ -9,6 +9,7 @@ import { CoverLetterModal } from './components/CoverLetterModal';
 import { NewJobModal } from './components/NewJobModal';
 import { CopilotChat } from './components/CopilotChat';
 import { CandidateManager } from './components/CandidateManager';
+import { ApplicationPackModal } from './components/ApplicationPackModal';
 import { ResumeParserModal } from './components/ResumeParserModal';
 import type { Job, Candidate, Application, ApplicationUpdate, CoverLetterResponse } from './types';
 import { CheckCircle2, AlertCircle, Bot } from 'lucide-react';
@@ -42,6 +43,7 @@ export const App: React.FC = () => {
 
   // Modals & Chat
   const [isNewJobOpen, setIsNewJobOpen] = useState(false);
+  const [packJobId, setPackJobId] = useState<string | null>(null);
   const [isResumeParserOpen, setIsResumeParserOpen] = useState(false);
   const [coverLetterData, setCoverLetterData] = useState<CoverLetterResponse | null>(null);
   const [isCopilotOpen, setIsCopilotOpen] = useState(false);
@@ -63,6 +65,7 @@ export const App: React.FC = () => {
     setJobs(data.map(normalizeJob));
   };
   const selectCandidate = (id: string) => {
+    setPackJobId(null);
     activeCandidateRef.current = undefined;
     localStorage.setItem('jobpilot_candidate', id);
     setSelectedCandidateId(id);
@@ -233,6 +236,7 @@ export const App: React.FC = () => {
             onApplyJob={handleApplyJob}
             appliedJobIds={appliedJobIds}
             onJobsImported={refreshJobs}
+            onPreparePack={setPackJobId}
           />
         )}
 
@@ -279,6 +283,7 @@ export const App: React.FC = () => {
       )}
 
       {/* Modals & Drawers */}
+      {candidate && packJobId && <ApplicationPackModal key={`${candidate.id}-${packJobId}-${lang}`} candidateId={candidate.id} jobId={packJobId} onClose={() => setPackJobId(null)} />}
       <CoverLetterModal
         data={coverLetterData}
         onClose={() => setCoverLetterData(null)}
@@ -290,12 +295,13 @@ export const App: React.FC = () => {
         onJobCreated={handleJobCreated}
       />
 
-      {candidate && <ResumeParserModal
+      {candidate && isResumeParserOpen && <ResumeParserModal
         key={candidate.id}
         isOpen={isResumeParserOpen}
         onClose={() => setIsResumeParserOpen(false)}
         candidateId={candidate.id}
         onProfileUpdated={(updated) => {
+          if (activeCandidateRef.current !== updated.id) return;
           setCandidate(updated);
           fetchData();
         }}

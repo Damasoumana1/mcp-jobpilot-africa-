@@ -27,6 +27,7 @@ async def test_mcp_server_lists_all_tools():
         "create_application",
         "update_application_status",
         "set_application_follow_up",
+        "prepare_application_pack",
         "list_applications",
         "generate_cover_letter",
         # Interview & Preparation
