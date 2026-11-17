@@ -35,6 +35,41 @@ def create_application(candidate_id: str, job_id: str, status: str = "saved") ->
         conn.close()
 
 
+def create_application_if_absent(candidate_id: str, job_id: str) -> tuple[dict, bool]:
+    """Create a saved application once per candidate/job pair."""
+    conn = get_connection()
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+        candidate = conn.execute("SELECT id FROM candidates WHERE id = ?", (candidate_id,)).fetchone()
+        if not candidate:
+            raise ValueError(f"Candidate '{candidate_id}' not found")
+        job = conn.execute("SELECT id FROM jobs WHERE id = ?", (job_id,)).fetchone()
+        if not job:
+            raise ValueError(f"Job '{job_id}' not found")
+
+        existing = conn.execute(
+            """SELECT * FROM applications WHERE candidate_id = ? AND job_id = ?
+               ORDER BY applied_at DESC, id LIMIT 1""",
+            (candidate_id, job_id),
+        ).fetchone()
+        if existing:
+            conn.commit()
+            return dict(existing), False
+
+        app_id = f"APP-{uuid.uuid4().hex[:8].upper()}"
+        now = datetime.utcnow().isoformat()
+        conn.execute(
+            """INSERT INTO applications (id, candidate_id, job_id, status, applied_at, next_action)
+               VALUES (?, ?, ?, 'saved', ?, ?)""",
+            (app_id, candidate_id, job_id, now, "Review application details"),
+        )
+        conn.commit()
+        row = conn.execute("SELECT * FROM applications WHERE id = ?", (app_id,)).fetchone()
+        return dict(row), True
+    finally:
+        conn.close()
+
+
 def update_application_status(application_id: str, status: str, notes: str | None = None) -> dict:
     """Update the current status of an application."""
     fields = {"status": status}

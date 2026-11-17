@@ -25,8 +25,9 @@ Les sections historiques ci-dessous décrivent le socle initial. Depuis :
   création de profil et de préparation d'entretien.
 - Import de CV PDF contenant du texte : extraction, aperçu modifiable et
   validation avant sauvegarde du profil. Limites et OCR : [documentation PDF](docs/resume-pdf.md).
-- Pack candidature FR/EN : aperçu modifiable et export ZIP des quatre documents,
-  sans envoi ni création de candidature. [Guide](docs/application-pack.md).
+- Pack candidature FR/EN : aperçu modifiable, copie/téléchargement individuel et
+  export ZIP des quatre documents. Ajout explicite au suivi avec planification
+  d'une relance, sans envoi à l'employeur. [Guide](docs/application-pack.md).
 - 168 tests Python passent ; compilation TypeScript et build Vite validés.
 
 Voir [le parcours candidat](docs/candidate-journey.md) pour le fonctionnement,

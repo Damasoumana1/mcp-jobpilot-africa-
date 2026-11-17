@@ -143,6 +143,33 @@ export const App: React.FC = () => {
     }
   };
 
+  const handleTrackFromPack = async (jobId: string): Promise<Application> => {
+    if (!candidate) throw new Error(lang === 'fr' ? 'Aucun profil actif.' : 'No active profile.');
+    const existing = applications.find(application => application.job_id === jobId);
+    if (existing) return existing;
+
+    const response = await fetch('/api/applications/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ candidate_id: candidate.id, job_id: jobId }),
+    });
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}));
+      throw new Error(body.error || (lang === 'fr' ? 'Impossible d’ajouter cette offre au suivi.' : 'Unable to add this job to tracking.'));
+    }
+
+    const created: Application = await response.json();
+    const job = jobs.find(item => item.id === jobId);
+    const tracked = { ...created, job_title: job?.title, company: job?.company };
+    if (activeCandidateRef.current === candidate.id) {
+      setApplications(previous => previous.some(application => application.job_id === jobId)
+        ? previous
+        : [tracked, ...previous]);
+      fetchData();
+    }
+    return tracked;
+  };
+
   const handleApplicationUpdate = async (applicationId: string, changes: ApplicationUpdate) => {
     const requestCandidateId = candidate?.id;
     const res = await fetch(`/api/applications/${applicationId}`, {
@@ -283,7 +310,16 @@ export const App: React.FC = () => {
       )}
 
       {/* Modals & Drawers */}
-      {candidate && packJobId && <ApplicationPackModal key={`${candidate.id}-${packJobId}-${lang}`} candidateId={candidate.id} jobId={packJobId} onClose={() => setPackJobId(null)} />}
+      {candidate && packJobId && <ApplicationPackModal
+        key={`${candidate.id}-${packJobId}-${lang}`}
+        candidateId={candidate.id}
+        jobId={packJobId}
+        trackedApplication={applications.find(application => application.job_id === packJobId)}
+        onTrack={handleTrackFromPack}
+        onUpdateApplication={handleApplicationUpdate}
+        onOpenApplications={() => { setPackJobId(null); setActiveTab('applications'); }}
+        onClose={() => setPackJobId(null)}
+      />}
       <CoverLetterModal
         data={coverLetterData}
         onClose={() => setCoverLetterData(null)}

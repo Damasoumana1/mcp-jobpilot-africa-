@@ -24,8 +24,10 @@ limitée à 20 000 caractères dans le récapitulatif.
 
 La checklist est un modèle indépendant : elle ne reprend pas les cases cochées
 localement dans le Studio d'entretien. Le PDF original du candidat n'est pas
-inclus. Aucun document n'est envoyé à l'employeur, aucune candidature n'est créée
-et aucun fichier ZIP n'est stocké sur le serveur.
+inclus. Aucun document n'est envoyé à l'employeur. Le bouton « Ajouter au suivi »
+crée, après action explicite, une candidature au statut « sauvegardée » ; une
+relance peut ensuite être planifiée dans le pack ou dans le tableau de suivi.
+Aucun fichier ZIP n'est stocké sur le serveur.
 
 ## API et MCP
 
@@ -38,6 +40,12 @@ et aucun fichier ZIP n'est stocké sur le serveur.
 acceptés ; les doublons et les chemins personnalisés sont refusés. Chaque contenu
 est limité à 100 000 caractères et la requête à 2,5 Mo. Le ZIP utilise UTF-8 et
 la réponse interdit la mise en cache.
+
+`POST /api/applications/save` ajoute explicitement l'offre au suivi avec le statut
+`saved`. L'opération est idempotente pour un couple candidat/offre : elle renvoie
+la candidature existante si elle est déjà suivie, sans réinitialiser son statut.
+Le formulaire de relance enregistre ensuite l'action et la date via
+`PATCH /api/applications/{application_id}`.
 
 Le tool MCP `prepare_application_pack(candidate_id, job_id, language="fr")`
 fournit le même aperçu textuel, sans écrire de fichiers sur disque.

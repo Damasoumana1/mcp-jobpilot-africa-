@@ -21,7 +21,9 @@
 
 - **Job Discovery**: Search tech opportunities across Africa by keyword, country, remote allowance, and contract duration.
 - **Skill Matching & Gap Analysis**: Match candidate profiles against job prerequisites, compute match scores (0–100%), and receive targeted learning recommendations.
-- **Application Tracking**: Create and maintain candidate job applications with custom notes and status lifecycles (`saved`, `applied`, `interview`, `offer`, `rejected`).
+- **Application Tracking & Follow-ups**: Track applications through `saved`, `applied`, `interview`, `offer`, and `rejected`; record a next action and date, and see reminders due today or overdue.
+- **Application Pack**: Prepare four editable FR/EN documents for a job, copy or download each one, or export the reviewed versions as a ZIP. Add a job to tracking explicitly and schedule a follow-up; no application is sent to an employer. See the [application pack guide](docs/application-pack.md).
+- **Resume Import**: Parse pasted resume text or extract text from a PDF, review the result, and choose whether to update a candidate profile. PDF import does not perform OCR. See [PDF support and limits](docs/resume-pdf.md).
 - **Interview Preparation**: Generate contextual technical and behavioral interview questions tailored to the candidate's profile and the employer's stack.
 - **Preparation Checklist**: Generate an actionable, prioritized preparation plan for upcoming interviews.
 
@@ -119,7 +121,7 @@ Add the following to your `claude_desktop_config.json`:
 
 ---
 
-## 🛠️ MCP Tools Overview (17 Tools)
+## 🛠️ MCP Tools Overview (19 Tools)
 
 | Tool Name | Parameters | Description |
 | :--- | :--- | :--- |
@@ -133,13 +135,15 @@ Add the following to your `claude_desktop_config.json`:
 | `get_candidate` | `candidate_id` | Retrieve full candidate profile including skills. |
 | `register_candidate` | `candidate_id`, `full_name`, `country`, `skills`, ... | Create or update candidate profile and skills. |
 | `match_candidate_to_job` | `candidate_id`, `job_id` | Weighted matching score, gap analysis, and mobility compatibility. |
-| `parse_resume` | `resume_text`, `candidate_id`, `auto_save` | AI resume parser extracting skills, education, and syncing to profile. |
+| `parse_resume` | `resume_text`, `candidate_id`, `auto_save` | Parse resume text for skills and education, with optional profile update. |
 | `create_application` | `candidate_id`, `job_id`, `status` | Create a tracked application record. |
 | `update_application_status` | `application_id`, `status`, `notes` | Update application progress and notes. |
+| `set_application_follow_up` | `application_id`, `next_action`, `follow_up_date` | Set or clear a follow-up reminder; does not send messages. |
 | `list_applications` | `candidate_id` | List tracked applications for a candidate. |
 | `generate_cover_letter` | `candidate_id`, `job_id`, `tone` | Generate tailored cover letter, email subject, and LinkedIn pitch. |
 | `generate_interview_questions` | `candidate_id`, `job_id`, `question_type`, `number` | Generate targeted technical and behavioral questions. |
 | `get_application_checklist` | `candidate_id`, `job_id` | Generate a prioritized preparation checklist. |
+| `prepare_application_pack` | `candidate_id`, `job_id`, `language` | Preview four editable FR/EN documents; does not save or send an application. |
 
 ---
 
@@ -166,7 +170,9 @@ npm run dev
 Open [http://localhost:5173](http://localhost:5173) in your browser to experience:
 - Interactive tech job explorer with continent-wide filters and remote badges
 - Real-time AI weighted matching score with visual breakdown & skill gaps
-- Application pipeline with status tracking (`saved`, `applied`, `interview`, `offer`, `rejected`)
+- Application pipeline with status tracking and scheduled follow-up reminders
+- Editable FR/EN application pack with per-document copy/download and ZIP export
+- Resume text and PDF import with a review step before profile updates
 - Interview studio with AI question generation and preparation checklists
 - Tailored cover letter & LinkedIn pitch generator with 1-click clipboard copy
 - Floating AI Career Copilot assistant

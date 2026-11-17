@@ -19,6 +19,7 @@ from jobpilot.database.connection import init_db
 from jobpilot.database.seed import seed_demo_data
 from jobpilot.services.application_service import (
     create_application,
+    create_application_if_absent,
     generate_cover_letter,
     list_applications,
     update_application,
@@ -226,6 +227,19 @@ async def api_applications(request: Request) -> JSONResponse:
             return JSONResponse({"error": str(e)}, status_code=400)
 
 
+async def api_save_application(request: Request) -> JSONResponse:
+    payload = await request.json()
+    candidate_id = payload.get("candidate_id")
+    job_id = payload.get("job_id")
+    if not candidate_id or not job_id:
+        return JSONResponse({"error": "candidate_id and job_id are required"}, status_code=400)
+    try:
+        application, created = create_application_if_absent(candidate_id, job_id)
+        return JSONResponse(application, status_code=201 if created else 200)
+    except ValueError as exc:
+        return JSONResponse({"error": str(exc)}, status_code=400)
+
+
 async def api_update_application(request: Request) -> JSONResponse:
     app_id = request.path_params["application_id"]
     try:
@@ -355,6 +369,7 @@ async def api_greenhouse_import(request: Request) -> JSONResponse:
 routes = [
     Route("/api/applications/pack", endpoint=api_application_pack, methods=["POST"]),
     Route("/api/applications/pack/download", endpoint=api_application_pack, methods=["POST"]),
+    Route("/api/applications/save", endpoint=api_save_application, methods=["POST"]),
     Route("/api/sources/greenhouse/import", endpoint=api_greenhouse_import, methods=["POST"]),
     Route("/api/geography", endpoint=api_geography, methods=["GET"]),
     Route("/api/jobs/analyze", endpoint=api_job_analysis, methods=["POST"]),

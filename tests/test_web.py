@@ -102,6 +102,27 @@ def test_candidate_journey_keeps_applications_and_preparation_separate():
             assert all({"task", "priority", "completed"} <= row.keys() for row in response.json())
 
 
+def test_save_application_endpoint_is_idempotent_and_preserves_existing_status():
+    payload = {"candidate_id": "DAMA-001", "job_id": "JOB-001"}
+    created = client.post("/api/applications/save", json=payload)
+    assert created.status_code == 201
+    application_id = created.json()["id"]
+    assert created.json()["status"] == "saved"
+
+    repeated = client.post("/api/applications/save", json=payload)
+    assert repeated.status_code == 200
+    assert repeated.json()["id"] == application_id
+    assert len([row for row in client.get("/api/applications", params={"candidate_id": "DAMA-001"}).json()
+                if row["job_id"] == "JOB-001"]) == 1
+
+    changed = client.patch(f"/api/applications/{application_id}", json={"status": "interview"})
+    assert changed.status_code == 200
+    existing = client.post("/api/applications/save", json=payload)
+    assert existing.status_code == 200
+    assert existing.json()["id"] == application_id
+    assert existing.json()["status"] == "interview"
+
+
 @pytest.mark.parametrize("path", ["questions", "checklist"])
 @pytest.mark.parametrize("payload", [{}, {"candidate_id": " ", "job_id": "JOB-001"}, [], None])
 def test_interview_rejects_invalid_context(path, payload):

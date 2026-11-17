@@ -1,32 +1,48 @@
-# React + TypeScript + Vite
+# JobPilot Africa frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+The React, TypeScript, and Vite dashboard lets candidates explore tech jobs,
+compare skills, prepare application documents, track applications and follow-ups,
+import resume content, and prepare for interviews. The interface is available in
+French and English.
 
-Currently, two official plugins are available:
+## Development
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Start the JobPilot API/web server from the repository root on port 8000, then
+start the frontend:
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+npm install
+npm run dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+Open [http://localhost:5173](http://localhost:5173). Vite proxies `/api`
+requests to `http://127.0.0.1:8000`.
+
+## Checks and builds
+
+```bash
+npm run build
+npm run lint
+```
+
+`npm run build` runs the TypeScript project build and creates the Vite bundle in
+`frontend/dist`. To build the bundle served by the Starlette web app, run this
+from the `frontend` directory:
+
+```powershell
+npx vite build --outDir ..\src\jobpilot\static
+```
+
+The API server serves that production UI from `src/jobpilot/static`.
+
+## Application pack
+
+The application-pack modal previews four editable documents for the selected
+candidate and job. Each document can be copied or downloaded separately, or all
+four can be downloaded as a ZIP containing the exact edited content. Adding the
+job to application tracking is a separate, explicit action; it creates a `saved`
+record or reuses the existing record without changing its status. A next action
+and follow-up date can then be set. No document is submitted to an employer.
+
+See the [application pack guide](../docs/application-pack.md) and
+[PDF resume guide](../docs/resume-pdf.md) for behavior and limitations.
