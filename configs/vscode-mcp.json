@@ -1,0 +1,10 @@
+{
+  "servers": {
+    "jobpilot-africa": {
+      "type": "stdio",
+      "command": "python",
+      "args": ["-m", "jobpilot.server"],
+      "cwd": "${workspaceFolder}"
+    }
+  }
+}

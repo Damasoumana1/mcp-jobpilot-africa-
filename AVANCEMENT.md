@@ -185,7 +185,7 @@ Le projet est désormais armé pour accueillir une communauté mondiale de contr
    - Dictionnaire complet de traductions pour tous les onglets, filtres, cartes d'offres, formulaires et Copilot.
    - Génération bilingue (Français et Anglais) des lettres de motivation, objets de mails et pitchs LinkedIn.
 4. **Guide Clients MCP & Export de Pack Candidature** :
-   - Fournir des fichiers de configuration prêts à copier pour Claude Desktop (`claude_desktop_config.json`) et Cursor IDE.
+   - Fichiers de configuration prêts à copier pour Claude Desktop, Cursor IDE et VS Code.
 
 
 ---

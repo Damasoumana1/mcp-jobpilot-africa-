@@ -2,6 +2,11 @@ from __future__ import annotations
 
 import argparse
 import os
+import hmac
+
+from starlette.middleware import Middleware
+from starlette.middleware.cors import CORSMiddleware
+from starlette.responses import JSONResponse
 
 from jobpilot.database.connection import init_db
 from jobpilot.database.seed import seed_demo_data
@@ -12,6 +17,34 @@ import jobpilot.tools.application_tools  # noqa: F401
 import jobpilot.tools.candidate_tools  # noqa: F401
 import jobpilot.tools.interview_tools  # noqa: F401
 import jobpilot.tools.job_tools  # noqa: F401
+
+
+class BearerTokenMiddleware:
+    """Require a bearer token only when the HTTP server is configured with one."""
+
+    def __init__(self, app, token: str):
+        self.app = app
+        self.token = token
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        authorization = dict(scope.get("headers", [])).get(b"authorization", b"")
+        scheme, _, credential = authorization.decode("latin-1").partition(" ")
+        if scheme.lower() != "bearer" or not hmac.compare_digest(
+            credential.strip(), self.token
+        ):
+            response = JSONResponse(
+                {"error": "Unauthorized: a valid bearer token is required"},
+                status_code=401,
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+            await response(scope, receive, send)
+            return
+
+        await self.app(scope, receive, send)
 
 
 def startup() -> None:
@@ -45,6 +78,21 @@ def main() -> None:
         help="Port for network transports",
     )
     parser.add_argument(
+        "--cors-origin",
+        action="append",
+        default=[
+            origin.strip()
+            for origin in os.getenv("MCP_CORS_ORIGINS", "").split(",")
+            if origin.strip()
+        ],
+        help="Trusted browser origin; may be repeated",
+    )
+    parser.add_argument(
+        "--bearer-token",
+        default=os.getenv("MCP_BEARER_TOKEN"),
+        help="Optional bearer token required by HTTP transports",
+    )
+    parser.add_argument(
         "--web",
         action="store_true",
         help="Launch the interactive Web Dashboard on http://localhost:8000",
@@ -61,7 +109,26 @@ def main() -> None:
     if args.transport == "stdio":
         mcp.run(transport="stdio")
     elif args.transport in ("sse", "http"):
-        mcp.run(transport=args.transport, host=args.host, port=args.port)
+        middleware = []
+        if args.cors_origin:
+            middleware.append(
+                Middleware(
+                    CORSMiddleware,
+                    allow_origins=args.cors_origin,
+                    allow_methods=["GET", "POST", "DELETE", "OPTIONS"],
+                    allow_headers=["Authorization", "Content-Type", "Accept"],
+                )
+            )
+        if args.bearer_token:
+            middleware.append(
+                Middleware(BearerTokenMiddleware, token=args.bearer_token)
+            )
+        mcp.run(
+            transport=args.transport,
+            host=args.host,
+            port=args.port,
+            middleware=middleware or None,
+        )
     else:
         mcp.run()
 

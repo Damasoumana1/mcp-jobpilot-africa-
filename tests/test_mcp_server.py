@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from jobpilot.server import mcp
+from jobpilot.server import BearerTokenMiddleware, mcp
 
 
 @pytest.mark.anyio
@@ -33,5 +33,30 @@ async def test_mcp_server_lists_all_tools():
         # Interview & Preparation
         "generate_interview_questions",
         "get_application_checklist",
+        "parse_resume",
     }
-    assert expected_tools.issubset(tool_names)
+    assert tool_names == expected_tools
+
+
+def test_bearer_middleware_rejects_missing_token():
+    async def inner_app(scope, receive, send):
+        raise AssertionError("The protected app should not run")
+
+    middleware = BearerTokenMiddleware(inner_app, "test-secret")
+    scope = {
+        "type": "http",
+        "headers": [],
+    }
+
+    import asyncio
+
+    async def receive():
+        return {"type": "http.request", "body": b"", "more_body": False}
+
+    sent = []
+
+    async def send(message):
+        sent.append(message)
+
+    asyncio.run(middleware(scope, receive, send))
+    assert sent[0]["status"] == 401

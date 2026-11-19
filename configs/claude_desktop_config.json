@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "jobpilot-africa": {
+      "command": "python",
+      "args": ["-m", "jobpilot.server"],
+      "cwd": "C:/Users/user/Desktop/mcp-jobpilot-africa"
+    }
+  }
+}

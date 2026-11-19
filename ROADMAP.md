@@ -48,8 +48,8 @@ To build the most accessible, AI-powered career accelerator for African early-ca
   - Integrate vector embeddings (e.g. sentence-transformers or Gemini API) for semantic matching between candidate bio and job descriptions.
 - [ ] **Interactive Mock Audio Interview**:
   - Real-time voice interview simulator using Web Speech API or voice LLM endpoints.
-- [ ] **One-Click MCP Client Configurations**:
-  - Pre-packaged configuration scripts for Claude Desktop (`claude_desktop_config.json`), Cursor IDE, and Zed.
+- [x] **One-Click MCP Client Configurations**:
+  - Pre-packaged configuration examples for Claude Desktop, Cursor IDE, VS Code, and remote HTTP clients.
 - [ ] **WhatsApp / Telegram Bot Connector**:
   - MCP gateway for candidates with limited PC access to receive daily job alerts and mock interview tips via messaging apps.
 

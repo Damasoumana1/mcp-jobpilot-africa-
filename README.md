@@ -119,6 +119,22 @@ Add the following to your `claude_desktop_config.json`:
 }
 ```
 
+Ready-to-copy configurations are available in [configs/](configs/). Complete setup
+instructions for Claude Desktop, Cursor, VS Code/Copilot, and remote ChatGPT-compatible
+clients are documented in [docs/mcp-clients.md](docs/mcp-clients.md).
+
+### Remote HTTP MCP
+
+For a local network test:
+
+```bash
+python -m jobpilot.server --transport http --host 127.0.0.1 --port 8000 --bearer-token "replace-me"
+```
+
+The MCP endpoint supports `Authorization: Bearer replace-me`. Browser origins can be
+added with `--cors-origin` or the `MCP_CORS_ORIGINS` environment variable. Production
+deployments must run behind HTTPS.
+
 ---
 
 ## 🛠️ MCP Tools Overview (19 Tools)

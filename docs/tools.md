@@ -1,10 +1,18 @@
 # MCP Tools Reference
 
-JobPilot Africa exposes 13 tools via the Model Context Protocol to empower AI agents and candidate workflows:
+JobPilot Africa exposes 19 tools via the Model Context Protocol to empower AI agents and candidate workflows:
 
 ---
 
 ## 1. Job Discovery & Recruiter Management
+
+`get_geography` lists all 55 African Union members and five regions.
+
+`import_greenhouse_jobs` previews or explicitly imports postings from a public Greenhouse board.
+
+`analyze_job_offer` compares pasted offer text against a candidate and optionally saves the report.
+
+`list_job_analyses` retrieves recent saved offer analyses.
 
 ### `search_jobs`
 Search tech opportunities across Africa by keyword, country, remote allowance, and contract duration.
