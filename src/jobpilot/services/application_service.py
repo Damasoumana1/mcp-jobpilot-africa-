@@ -97,11 +97,35 @@ def update_application(application_id: str, changes: dict) -> dict:
         conn.close()
 
 
-def list_applications(candidate_id: str | None = None) -> list[dict]:
-    """List applications, optionally filtered by candidate_id."""
+def list_applications(
+    candidate_id: str | None = None,
+    owner_user_id: str | None = None,
+    public_only: bool = False,
+) -> list[dict]:
+    """List applications, optionally filtered by candidate or its owner."""
     conn = get_connection()
     try:
-        if candidate_id:
+        if owner_user_id:
+            query = """SELECT a.*, j.title AS job_title, j.company FROM applications a
+                JOIN candidates c ON c.id = a.candidate_id
+                LEFT JOIN jobs j ON j.id = a.job_id
+                WHERE c.owner_user_id = ?"""
+            params: tuple[str, ...] = (owner_user_id,)
+            if candidate_id:
+                query += " AND a.candidate_id = ?"
+                params += (candidate_id,)
+            rows = conn.execute(query + " ORDER BY a.applied_at DESC", params).fetchall()
+        elif public_only:
+            query = """SELECT a.*, j.title AS job_title, j.company FROM applications a
+                JOIN candidates c ON c.id = a.candidate_id
+                LEFT JOIN jobs j ON j.id = a.job_id
+                WHERE c.owner_user_id IS NULL"""
+            params = ()
+            if candidate_id:
+                query += " AND a.candidate_id = ?"
+                params = (candidate_id,)
+            rows = conn.execute(query + " ORDER BY a.applied_at DESC", params).fetchall()
+        elif candidate_id:
             rows = conn.execute(
                 """SELECT a.*, j.title AS job_title, j.company FROM applications a
                    LEFT JOIN jobs j ON j.id = a.job_id WHERE a.candidate_id = ? ORDER BY a.applied_at DESC""",

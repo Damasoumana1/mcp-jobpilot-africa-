@@ -35,8 +35,143 @@ from jobpilot.services.pdf_service import MAX_PDF_BYTES, PdfExtractionError, ext
 from jobpilot.services.application_pack_service import PackRequest, PackDownload, prepare_application_pack, build_pack_zip
 from starlette.concurrency import run_in_threadpool
 
+from jobpilot.models.auth import (
+    AccountUpdateRequest,
+    LoginRequest,
+    PasswordChangeRequest,
+    RegisterRequest,
+)
+from jobpilot.config import DEBUG
+from jobpilot.services.auth_service import (
+    create_session,
+    change_password,
+    delete_session,
+    delete_user,
+    get_session_user,
+    register_user,
+    update_user,
+)
+
+
+SESSION_COOKIE = "jobpilot_session"
+
+
+def current_user(request: Request) -> dict | None:
+    return get_session_user(request.cookies.get(SESSION_COOKIE))
+
+
+def can_access_candidate(user: dict | None, candidate_id: str) -> bool:
+    return get_candidate(
+        candidate_id,
+        owner_user_id=user["id"] if user else None,
+        public_only=user is None,
+    ) is not None
+
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
+
+
+async def api_auth_register(request: Request) -> JSONResponse:
+    try:
+        payload = RegisterRequest.model_validate(await request.json())
+    except (ValueError, ValidationError):
+        return JSONResponse({"error": "Invalid registration data"}, status_code=400)
+    try:
+        user = register_user(payload.email, payload.password, payload.full_name)
+        session_user, token, expires = create_session(payload.email, payload.password)
+        response = JSONResponse(session_user, status_code=201)
+        response.set_cookie(
+            SESSION_COOKIE,
+            token,
+            httponly=True,
+            secure=not DEBUG,
+            samesite="lax",
+            expires=expires,
+            path="/",
+        )
+        return response
+    except ValueError as exc:
+        return JSONResponse({"error": str(exc)}, status_code=409)
+
+
+async def api_auth_login(request: Request) -> JSONResponse:
+    try:
+        payload = LoginRequest.model_validate(await request.json())
+    except (ValueError, ValidationError):
+        return JSONResponse({"error": "Invalid login data"}, status_code=400)
+    try:
+        user, token, expires = create_session(payload.email, payload.password)
+        response = JSONResponse(user)
+        response.set_cookie(
+            SESSION_COOKIE,
+            token,
+            httponly=True,
+            secure=not DEBUG,
+            samesite="lax",
+            expires=expires,
+            path="/",
+        )
+        return response
+    except ValueError as exc:
+        return JSONResponse({"error": str(exc)}, status_code=401)
+
+
+async def api_auth_logout(request: Request) -> JSONResponse:
+    delete_session(request.cookies.get(SESSION_COOKIE))
+    response = JSONResponse({"ok": True})
+    response.delete_cookie(SESSION_COOKIE, path="/")
+    return response
+
+
+async def api_auth_me(request: Request) -> JSONResponse:
+    user = current_user(request)
+    if not user:
+        return JSONResponse({"error": "Authentication required"}, status_code=401)
+    return JSONResponse(user)
+
+
+async def api_auth_update(request: Request) -> JSONResponse:
+    user = current_user(request)
+    if not user:
+        return JSONResponse({"error": "Authentication required"}, status_code=401)
+    try:
+        payload = AccountUpdateRequest.model_validate(await request.json())
+    except (ValueError, ValidationError):
+        return JSONResponse({"error": "Invalid account data"}, status_code=400)
+    changes = payload.model_dump(exclude_unset=True, exclude_none=True)
+    if not changes:
+        return JSONResponse({"error": "At least one account field is required"}, status_code=400)
+    try:
+        return JSONResponse(update_user(user["id"], **changes))
+    except ValueError as exc:
+        return JSONResponse({"error": str(exc)}, status_code=409)
+
+
+async def api_auth_change_password(request: Request) -> JSONResponse:
+    user = current_user(request)
+    if not user:
+        return JSONResponse({"error": "Authentication required"}, status_code=401)
+    try:
+        payload = PasswordChangeRequest.model_validate(await request.json())
+    except (ValueError, ValidationError):
+        return JSONResponse({"error": "Invalid password data"}, status_code=400)
+    try:
+        change_password(user["id"], payload.current_password, payload.new_password)
+    except ValueError as exc:
+        return JSONResponse({"error": str(exc)}, status_code=400)
+    response = JSONResponse({"ok": True})
+    response.delete_cookie(SESSION_COOKIE, path="/")
+    return response
+
+
+async def api_auth_delete(request: Request) -> JSONResponse:
+    user = current_user(request)
+    if not user:
+        return JSONResponse({"error": "Authentication required"}, status_code=401)
+    delete_user(user["id"])
+    response = JSONResponse({"ok": True})
+    response.delete_cookie(SESSION_COOKIE, path="/")
+    return response
 
 
 async def api_job_analysis(request: Request) -> JSONResponse:
@@ -44,6 +179,8 @@ async def api_job_analysis(request: Request) -> JSONResponse:
         candidate_id = request.query_params.get("candidate_id", "").strip()
         if not candidate_id:
             return JSONResponse({"error": "candidate_id is required"}, status_code=400)
+        if not can_access_candidate(current_user(request), candidate_id):
+            return JSONResponse({"error": "Candidate not found"}, status_code=404)
         try:
             return JSONResponse([r.model_dump(mode="json") for r in list_job_analyses(candidate_id)])
         except ValueError as exc:
@@ -53,6 +190,8 @@ async def api_job_analysis(request: Request) -> JSONResponse:
         analysis_request = JobAnalysisRequest.model_validate(payload)
     except (ValueError, ValidationError):
         return JSONResponse({"error": "Invalid request: candidate_id and job_text (30–20000 characters) are required; source_url must use HTTPS."}, status_code=400)
+    if not can_access_candidate(current_user(request), analysis_request.candidate_id):
+        return JSONResponse({"error": "Candidate not found"}, status_code=404)
     try:
         report = analyze_job(analysis_request, save=request.url.path == "/api/job-analyses")
         return JSONResponse(report.model_dump(mode="json"), status_code=201 if report.id else 200)
@@ -113,8 +252,13 @@ async def api_job_detail(request: Request) -> JSONResponse:
 
 
 async def api_candidates(request: Request) -> JSONResponse:
+    user = current_user(request)
     if request.method == "GET":
-        candidates = list_candidates()
+        candidates = (
+            list_candidates(owner_user_id=user["id"])
+            if user
+            else list_candidates(public_only=True)
+        )
         return JSONResponse(candidates)
     elif request.method == "POST":
         try:
@@ -122,7 +266,30 @@ async def api_candidates(request: Request) -> JSONResponse:
         except ValueError:
             return JSONResponse({"error": "Valid id, full_name, country and skills are required"}, status_code=400)
         fields = payload.model_dump(exclude={"id"})
-        candidate = upsert_candidate(candidate_id=payload.id, **fields)
+        if not user:
+            existing = get_candidate(payload.id)
+            if existing and existing.get("owner_user_id") is not None:
+                return JSONResponse({"error": "Candidate belongs to another user"}, status_code=403)
+            candidate = upsert_candidate(candidate_id=payload.id, **fields)
+            return JSONResponse(candidate, status_code=201)
+        existing = get_candidate(payload.id)
+        if existing and existing.get("owner_user_id") != user["id"]:
+            return JSONResponse({"error": "Candidate belongs to another user"}, status_code=403)
+        candidate = upsert_candidate(
+            candidate_id=payload.id,
+            owner_user_id=user["id"],
+            **fields,
+        )
+        from jobpilot.database.connection import get_connection
+        conn = get_connection()
+        try:
+            conn.execute(
+                "UPDATE users SET candidate_id = ? WHERE id = ?",
+                (payload.id, user["id"]),
+            )
+            conn.commit()
+        finally:
+            conn.close()
         return JSONResponse(candidate, status_code=201)
 
 
@@ -144,6 +311,8 @@ async def api_application_pack(request: Request) -> Response:
         pack_request = PackRequest.model_validate(payload)
     except ValueError:
         return JSONResponse({"error": "Invalid application pack request"}, status_code=400)
+    if not can_access_candidate(current_user(request), pack_request.candidate_id):
+        return JSONResponse({"error": "Candidate not found"}, status_code=404)
     try:
         return JSONResponse(prepare_application_pack(pack_request), headers={"Cache-Control": "no-store"})
     except LookupError:
@@ -175,6 +344,9 @@ async def api_parse_resume(request: Request) -> JSONResponse:
     
     candidate_id = payload.get("candidate_id", "DAMA-001")
     auto_save = payload.get("auto_save", False)
+    user = current_user(request)
+    if auto_save and not can_access_candidate(user, candidate_id):
+        return JSONResponse({"error": "Candidate not found"}, status_code=404)
 
     try:
         parsed = parse_resume(
@@ -188,9 +360,13 @@ async def api_parse_resume(request: Request) -> JSONResponse:
 
 
 async def api_candidate_detail(request: Request) -> JSONResponse:
-
+    user = current_user(request)
     candidate_id = request.path_params["candidate_id"]
-    candidate = get_candidate(candidate_id)
+    candidate = (
+        get_candidate(candidate_id, owner_user_id=user["id"])
+        if user
+        else get_candidate(candidate_id, public_only=True)
+    )
     if not candidate:
         return JSONResponse({"error": f"Candidate '{candidate_id}' not found"}, status_code=404)
     return JSONResponse(candidate)
@@ -202,6 +378,8 @@ async def api_match(request: Request) -> JSONResponse:
     job_id = payload.get("job_id")
     if not candidate_id or not job_id:
         return JSONResponse({"error": "candidate_id and job_id are required"}, status_code=400)
+    if not can_access_candidate(current_user(request), candidate_id):
+        return JSONResponse({"error": "Candidate not found"}, status_code=404)
 
     try:
         result = match_candidate_to_job(candidate_id=candidate_id, job_id=job_id)
@@ -211,9 +389,16 @@ async def api_match(request: Request) -> JSONResponse:
 
 
 async def api_applications(request: Request) -> JSONResponse:
+    user = current_user(request)
     if request.method == "GET":
         candidate_id = request.query_params.get("candidate_id")
-        apps = list_applications(candidate_id=candidate_id)
+        if candidate_id and not can_access_candidate(user, candidate_id):
+            return JSONResponse({"error": "Candidate not found"}, status_code=404)
+        apps = list_applications(
+            candidate_id=candidate_id,
+            owner_user_id=user["id"] if user else None,
+            public_only=user is None,
+        )
         return JSONResponse(apps)
     elif request.method == "POST":
         payload = await request.json()
@@ -221,6 +406,10 @@ async def api_applications(request: Request) -> JSONResponse:
         job_id = payload.get("job_id")
         status = payload.get("status", "saved")
         try:
+            if not candidate_id or not job_id:
+                return JSONResponse({"error": "candidate_id and job_id are required"}, status_code=400)
+            if not can_access_candidate(user, candidate_id):
+                return JSONResponse({"error": "Candidate not found"}, status_code=404)
             app = create_application(candidate_id=candidate_id, job_id=job_id, status=status)
             return JSONResponse(app, status_code=201)
         except ValueError as e:
@@ -228,12 +417,15 @@ async def api_applications(request: Request) -> JSONResponse:
 
 
 async def api_save_application(request: Request) -> JSONResponse:
+    user = current_user(request)
     payload = await request.json()
     candidate_id = payload.get("candidate_id")
     job_id = payload.get("job_id")
     if not candidate_id or not job_id:
         return JSONResponse({"error": "candidate_id and job_id are required"}, status_code=400)
     try:
+        if not can_access_candidate(user, candidate_id):
+            return JSONResponse({"error": "Candidate not found"}, status_code=404)
         application, created = create_application_if_absent(candidate_id, job_id)
         return JSONResponse(application, status_code=201 if created else 200)
     except ValueError as exc:
@@ -241,12 +433,30 @@ async def api_save_application(request: Request) -> JSONResponse:
 
 
 async def api_update_application(request: Request) -> JSONResponse:
+    user = current_user(request)
     app_id = request.path_params["application_id"]
     try:
         payload = ApplicationUpdate.model_validate(await request.json())
     except ValueError:
         return JSONResponse({"error": "Invalid update: use a valid status, next_action (max 500 characters), notes or follow_up_date (YYYY-MM-DD). Use null to clear a reminder."}, status_code=400)
     try:
+        if user:
+            from jobpilot.database.connection import get_connection
+            conn = get_connection()
+            try:
+                owned = conn.execute(
+                    """
+                    SELECT 1
+                    FROM applications a
+                    JOIN candidates c ON c.id = a.candidate_id
+                    WHERE a.id = ? AND c.owner_user_id = ?
+                    """,
+                    (app_id, user["id"]),
+                ).fetchone()
+            finally:
+                conn.close()
+            if not owned:
+                return JSONResponse({"error": "Application not found"}, status_code=404)
         updated = update_application(app_id, payload.model_dump(exclude_unset=True))
         return JSONResponse(updated)
     except ValueError as e:
@@ -259,6 +469,8 @@ async def api_cover_letter(request: Request) -> JSONResponse:
     job_id = payload.get("job_id")
     tone = payload.get("tone", "professional")
     language = payload.get("language", "fr")
+    if candidate_id and not can_access_candidate(current_user(request), candidate_id):
+        return JSONResponse({"error": "Candidate not found"}, status_code=404)
     try:
         result = generate_cover_letter(candidate_id=candidate_id, job_id=job_id, tone=tone, language=language)
         return JSONResponse(result)
@@ -272,6 +484,8 @@ async def api_interview_questions(request: Request) -> JSONResponse:
     except ValueError:
         return JSONResponse({"error": "candidate_id, job_id and a number between 1 and 12 are required"}, status_code=400)
     candidate_id, job_id, number = payload.candidate_id, payload.job_id, payload.number
+    if not can_access_candidate(current_user(request), candidate_id):
+        return JSONResponse({"error": "Candidate not found"}, status_code=404)
     try:
         questions = generate_interview_questions(candidate_id=candidate_id, job_id=job_id, number=number)
         return JSONResponse(questions)
@@ -285,6 +499,8 @@ async def api_interview_checklist(request: Request) -> JSONResponse:
     except ValueError:
         return JSONResponse({"error": "candidate_id and job_id are required"}, status_code=400)
     candidate_id, job_id = payload.candidate_id, payload.job_id
+    if not can_access_candidate(current_user(request), candidate_id):
+        return JSONResponse({"error": "Candidate not found"}, status_code=404)
     try:
         checklist = get_application_checklist(candidate_id=candidate_id, job_id=job_id)
         return JSONResponse(checklist)
@@ -297,6 +513,8 @@ async def api_copilot_chat(request: Request) -> JSONResponse:
     payload = await request.json()
     message = (payload.get("message") or "").lower().strip()
     candidate_id = payload.get("candidate_id", "DAMA-001")
+    if not can_access_candidate(current_user(request), candidate_id):
+        return JSONResponse({"error": "Candidate not found"}, status_code=404)
 
     if not message:
         return JSONResponse({"reply": "Bonjour ! Posez-moi une question sur les offres tech, votre matching ou vos entretiens."})
@@ -367,6 +585,13 @@ async def api_greenhouse_import(request: Request) -> JSONResponse:
 
 
 routes = [
+    Route("/api/auth/register", endpoint=api_auth_register, methods=["POST"]),
+    Route("/api/auth/login", endpoint=api_auth_login, methods=["POST"]),
+    Route("/api/auth/logout", endpoint=api_auth_logout, methods=["POST"]),
+    Route("/api/auth/me", endpoint=api_auth_me, methods=["GET"]),
+    Route("/api/auth/me", endpoint=api_auth_update, methods=["PATCH"]),
+    Route("/api/auth/me", endpoint=api_auth_delete, methods=["DELETE"]),
+    Route("/api/auth/password", endpoint=api_auth_change_password, methods=["POST"]),
     Route("/api/applications/pack", endpoint=api_application_pack, methods=["POST"]),
     Route("/api/applications/pack/download", endpoint=api_application_pack, methods=["POST"]),
     Route("/api/applications/save", endpoint=api_save_application, methods=["POST"]),

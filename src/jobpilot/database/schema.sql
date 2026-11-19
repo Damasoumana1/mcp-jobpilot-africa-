@@ -19,6 +19,7 @@ CREATE INDEX IF NOT EXISTS idx_job_analyses_candidate ON job_analyses(candidate_
 
 CREATE TABLE IF NOT EXISTS candidates (
     id TEXT PRIMARY KEY,
+    owner_user_id TEXT,
     full_name TEXT NOT NULL,
     country TEXT NOT NULL,
     city TEXT,
@@ -81,3 +82,25 @@ CREATE TABLE IF NOT EXISTS applications (
     FOREIGN KEY (candidate_id) REFERENCES candidates(id),
     FOREIGN KEY (job_id) REFERENCES jobs(id)
 );
+
+CREATE TABLE IF NOT EXISTS users (
+    id TEXT PRIMARY KEY,
+    email TEXT NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL,
+    full_name TEXT NOT NULL,
+    candidate_id TEXT,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    deleted_at TEXT,
+    created_at TEXT NOT NULL,
+    FOREIGN KEY (candidate_id) REFERENCES candidates(id)
+);
+
+CREATE TABLE IF NOT EXISTS user_sessions (
+    token_hash TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    expires_at TEXT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_user_sessions_user ON user_sessions(user_id, expires_at);

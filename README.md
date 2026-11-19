@@ -122,6 +122,30 @@ Add the following to your `claude_desktop_config.json`:
 Ready-to-copy configurations are available in [configs/](configs/). Complete setup
 instructions for Claude Desktop, Cursor, VS Code/Copilot, and remote ChatGPT-compatible
 clients are documented in [docs/mcp-clients.md](docs/mcp-clients.md).
+The end-to-end LLM test scenario is available in [docs/llm-mcp-test.md](docs/llm-mcp-test.md).
+The prioritized implementation backlog is available in [docs/product-roadmap.md](docs/product-roadmap.md).
+
+## Authentication API
+
+The web API provides account registration, login, logout, session inspection,
+account updates, password changes and account deletion:
+
+```text
+POST /api/auth/register
+POST /api/auth/login
+POST /api/auth/logout
+GET  /api/auth/me
+PATCH /api/auth/me
+DELETE /api/auth/me
+POST /api/auth/password
+```
+
+Sessions use an HttpOnly, SameSite=Lax cookie. In local development the cookie is
+served over HTTP; production deployments must use HTTPS and set a secure deployment
+configuration. Password changes revoke all sessions. Account deletion removes the
+account's candidate profiles, applications, analyses and sessions. Web account
+credentials are separate from the Bearer token used by remote HTTP MCP clients;
+OIDC for MCP is a separate roadmap item.
 
 ### Remote HTTP MCP
 

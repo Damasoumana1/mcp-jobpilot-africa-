@@ -8,6 +8,10 @@ interface NavbarProps {
   openCopilot: () => void;
   applicationsCount: number;
   jobsCount: number;
+  userName?: string;
+  onOpenAuth: () => void;
+  onOpenAccount: () => void;
+  onLogout: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -16,6 +20,10 @@ export const Navbar: React.FC<NavbarProps> = ({
   openCopilot,
   applicationsCount,
   jobsCount,
+  userName,
+  onOpenAuth,
+  onOpenAccount,
+  onLogout,
 }) => {
   const { lang, setLang, t } = useLanguage();
 
@@ -88,6 +96,33 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Actions: Language Switcher & Copilot Button */}
           <div className="flex items-center space-x-3">
+            {userName ? (
+              <>
+                <span className="hidden lg:block max-w-36 truncate text-xs text-slate-300">{userName}</span>
+                <button
+                  type="button"
+                  onClick={onOpenAccount}
+                  className="px-3 py-2 rounded-xl border border-slate-700 text-xs text-slate-300 hover:text-white"
+                >
+                  {lang === 'fr' ? 'Mon compte' : 'Account'}
+                </button>
+                <button
+                  type="button"
+                  onClick={onLogout}
+                  className="px-3 py-2 rounded-xl border border-slate-700 text-xs text-slate-300 hover:text-white"
+                >
+                  {lang === 'fr' ? 'Quitter' : 'Sign out'}
+                </button>
+              </>
+            ) : (
+              <button
+                type="button"
+                onClick={onOpenAuth}
+                className="px-3.5 py-2 rounded-xl border border-emerald-500/40 text-sm font-semibold text-emerald-300 hover:bg-emerald-500/10"
+              >
+                {lang === 'fr' ? 'Connexion' : 'Sign in'}
+              </button>
+            )}
             
             {/* Language Selector */}
             <div className="flex items-center bg-slate-900 border border-slate-700/80 rounded-xl p-1 shadow-inner">

@@ -11,6 +11,8 @@ import { CopilotChat } from './components/CopilotChat';
 import { CandidateManager } from './components/CandidateManager';
 import { ApplicationPackModal } from './components/ApplicationPackModal';
 import { ResumeParserModal } from './components/ResumeParserModal';
+import { AuthModal } from './components/AuthModal';
+import { AccountSettingsModal } from './components/AccountSettingsModal';
 import type { Job, Candidate, Application, ApplicationUpdate, CoverLetterResponse } from './types';
 import { CheckCircle2, AlertCircle, Bot } from 'lucide-react';
 import { useLanguage } from './i18n/LanguageContext';
@@ -37,6 +39,9 @@ export const App: React.FC = () => {
   const [loadError, setLoadError] = useState('');
   const [loading, setLoading] = useState(true);
   const [applications, setApplications] = useState<Application[]>([]);
+  const [authUser, setAuthUser] = useState<{ id: string; email: string; full_name: string; candidate_id: string | null } | null>(null);
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [isAccountOpen, setIsAccountOpen] = useState(false);
 
 
   const activeCandidateRef = useRef(candidate?.id);
@@ -58,6 +63,30 @@ export const App: React.FC = () => {
   };
 
   const fetchData = () => setRevision(value => value + 1);
+  useEffect(() => {
+    fetch('/api/auth/me')
+      .then(async (response) => {
+        if (!response.ok) return null;
+        return response.json();
+      })
+      .then((user) => setAuthUser(user))
+      .catch(() => setAuthUser(null));
+  }, []);
+
+  const clearAuthenticatedState = () => {
+    setAuthUser(null);
+    setCandidate(null);
+    setCandidates([]);
+    setApplications([]);
+    setSelectedCandidateId('');
+    localStorage.removeItem('jobpilot_candidate');
+    setIsAccountOpen(false);
+  };
+
+  const handleLogout = async () => {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    clearAuthenticatedState();
+  };
   const refreshJobs = async () => {
     const response = await fetch('/api/jobs');
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -244,7 +273,31 @@ export const App: React.FC = () => {
         openCopilot={() => setIsCopilotOpen(true)}
         applicationsCount={applications.length}
         jobsCount={jobs.length}
+        userName={authUser?.full_name}
+        onOpenAuth={() => setIsAuthOpen(true)}
+        onOpenAccount={() => setIsAccountOpen(true)}
+        onLogout={handleLogout}
       />
+      <AuthModal
+        lang={lang}
+        open={isAuthOpen}
+        onClose={() => setIsAuthOpen(false)}
+        onAuthenticated={(user) => {
+          setAuthUser(user);
+          fetchData();
+        }}
+      />
+      {authUser && (
+        <AccountSettingsModal
+          lang={lang}
+          open={isAccountOpen}
+          user={authUser}
+          onClose={() => setIsAccountOpen(false)}
+          onUpdated={setAuthUser}
+          onSessionExpired={clearAuthenticatedState}
+          onDeleted={clearAuthenticatedState}
+        />
+      )}
 
       {/* Main Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">

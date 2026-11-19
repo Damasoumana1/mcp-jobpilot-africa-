@@ -25,6 +25,10 @@ def init_db() -> None:
         columns = {row[1] for row in conn.execute("PRAGMA table_info(applications)")}
         if "follow_up_date" not in columns:
             conn.execute("ALTER TABLE applications ADD COLUMN follow_up_date TEXT")
+        candidate_columns = {row[1] for row in conn.execute("PRAGMA table_info(candidates)")}
+        if "owner_user_id" not in candidate_columns:
+            conn.execute("ALTER TABLE candidates ADD COLUMN owner_user_id TEXT")
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_candidates_owner ON candidates(owner_user_id)")
         conn.commit()
     finally:
         conn.close()

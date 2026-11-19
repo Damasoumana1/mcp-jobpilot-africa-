@@ -5,6 +5,11 @@ compare skills, prepare application documents, track applications and follow-ups
 import resume content, and prepare for interviews. The interface is available in
 French and English.
 
+Candidates can register and sign in with an email and password, update account
+details, change their password, and delete their account from the account menu.
+Candidate profiles, applications, and saved job analyses are scoped to the
+authenticated account.
+
 ## Development
 
 Start the JobPilot API/web server from the repository root on port 8000, then

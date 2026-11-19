@@ -16,11 +16,26 @@ def _get_skills_for_candidate(conn, candidate_id: str) -> list[str]:
     return [row["name"] for row in rows]
 
 
-def get_candidate(candidate_id: str) -> dict | None:
+def get_candidate(
+    candidate_id: str,
+    owner_user_id: str | None = None,
+    public_only: bool = False,
+) -> dict | None:
     """Retrieve full candidate profile including skills."""
     conn = get_connection()
     try:
-        row = conn.execute("SELECT * FROM candidates WHERE id = ?", (candidate_id,)).fetchone()
+        if owner_user_id:
+            row = conn.execute(
+                "SELECT * FROM candidates WHERE id = ? AND owner_user_id = ?",
+                (candidate_id, owner_user_id),
+            ).fetchone()
+        elif public_only:
+            row = conn.execute(
+                "SELECT * FROM candidates WHERE id = ? AND owner_user_id IS NULL",
+                (candidate_id,),
+            ).fetchone()
+        else:
+            row = conn.execute("SELECT * FROM candidates WHERE id = ?", (candidate_id,)).fetchone()
         if not row:
             return None
         data = dict(row)
@@ -30,11 +45,23 @@ def get_candidate(candidate_id: str) -> dict | None:
         conn.close()
 
 
-def list_candidates() -> list[dict]:
+def list_candidates(
+    owner_user_id: str | None = None, public_only: bool = False
+) -> list[dict]:
     """Retrieve all candidates in the database."""
     conn = get_connection()
     try:
-        rows = conn.execute("SELECT * FROM candidates ORDER BY full_name ASC").fetchall()
+        if owner_user_id:
+            rows = conn.execute(
+                "SELECT * FROM candidates WHERE owner_user_id = ? ORDER BY full_name ASC",
+                (owner_user_id,),
+            ).fetchall()
+        elif public_only:
+            rows = conn.execute(
+                "SELECT * FROM candidates WHERE owner_user_id IS NULL ORDER BY full_name ASC"
+            ).fetchall()
+        else:
+            rows = conn.execute("SELECT * FROM candidates ORDER BY full_name ASC").fetchall()
         candidates = []
         for row in rows:
             data = dict(row)
@@ -56,6 +83,7 @@ def upsert_candidate(
     education: str | None = None,
     summary: str | None = None,
     skills: list[str] | None = None,
+    owner_user_id: str | None = None,
 ) -> dict:
     """Create or update a candidate profile and their skills."""
     conn = get_connection()
@@ -63,8 +91,8 @@ def upsert_candidate(
         cursor = conn.cursor()
         cursor.execute(
             """
-            INSERT INTO candidates (id, full_name, country, city, email, availability_date, languages, education, summary)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO candidates (id, full_name, country, city, email, availability_date, languages, education, summary, owner_user_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(id) DO UPDATE SET
                 full_name = excluded.full_name,
                 country = excluded.country,
@@ -73,9 +101,10 @@ def upsert_candidate(
                 availability_date = excluded.availability_date,
                 languages = excluded.languages,
                 education = excluded.education,
-                summary = excluded.summary
+                summary = excluded.summary,
+                owner_user_id = COALESCE(excluded.owner_user_id, candidates.owner_user_id)
             """,
-            (candidate_id, full_name, country, city, email, availability_date, languages, education, summary),
+            (candidate_id, full_name, country, city, email, availability_date, languages, education, summary, owner_user_id),
         )
 
         if skills is not None:
